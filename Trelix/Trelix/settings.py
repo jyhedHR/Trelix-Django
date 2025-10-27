@@ -43,7 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'Trelix'
+    'Trelix',
+    'cours',
+    'chapitre'
 ]
 
 MIDDLEWARE = [
@@ -79,6 +81,12 @@ WSGI_APPLICATION = 'Trelix.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+print("DB_NAME:", os.getenv("DB_NAME"))
+print("DB_USER:", os.getenv("DB_USER"))
+print("DB_PASSWORD:", os.getenv("DB_PASSWORD"))
+print("DB_HOST:", os.getenv("DB_HOST"))
+print("DB_PORT:", os.getenv("DB_PORT"))
+
 
 DATABASES = {
     'default': {
