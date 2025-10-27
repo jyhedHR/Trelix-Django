@@ -1,0 +1,99 @@
+{% extends "trelix/base.html" %} 
+{% load static %}
+{% block title %} Profile {% endblock %} 
+{% block content %} 
+{% include 'trelix/header.html' %}
+<div class="dashbaord-cover bg-shade sec-padding">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12 position-relative">
+        <div class="dash-cover-bg rounded-3"></div>
+        <div
+          class="dash-cover-info d-sm-flex justify-content-between align-items-center"
+        >
+          <div class="ava-wrap d-flex align-items-center">
+            <div class="avatar me-3 rounded-circle">
+              <img
+                width="150"
+                src="{% static 'images/avatar.png' %}"
+                class="rounded-circle"
+                alt="Avatar"
+              />
+            </div>
+            <div class="ava-info">
+              <h4 class="display-5 text-white mb-0">
+                {{ request.user.get_full_name|default:request.user.username }}
+              </h4>
+              <div class="ava-meta text-white mt-1">
+                <span>
+                  <img
+                    width="20"
+                    src="{% static 'images/icons/star.png' %}"
+                    alt=""
+                  />4.8
+                </span>
+                <span>
+                  <i class="feather-icon icon-users"></i>25k Students
+                </span>
+              </div>
+            </div>
+          </div>
+          <a href="{% url 'courses' %}" class="btn btn-sm btn-info rounded-5">
+            <i class="feather-icon icon-plus me-2"></i>Add New Course
+          </a>
+        </div>
+      </div>
+    </div>
+    <!-- Dashboard Inner Start -->
+    <div class="row mt-5">
+      <div class="col-lg-3">
+        <aside class="dashboard-sidebar shadow-1 border rounded-3">
+          <div class="widget">
+            <p class="grettings">
+              Welcome, {{ request.user.get_short_name|default:request.user.username }}
+            </p>
+            <nav class="dashboard-nav">
+              <ul class="list-unstyled nav">
+                <li>
+                  <a class="nav-link active" href="{% url 'profile' %}">
+                    <i class="feather-icon icon-user"></i>
+                    <span>My Profile</span>
+                  </a>
+                </li>
+                <!-- More nav links can be added here as actual routes/views become available -->
+              </ul>
+            </nav>
+          </div>
+        </aside>
+      </div>
+      <div class="col-lg-9 ps-lg-4">
+        <section class="dashboard-sec">
+          <h2 class="display-5 pb-3 mb-4">My Profile</h2>
+          <div class="profile-info border rounded-3">
+            <ul>
+              <li><span>UserName</span>{{ request.user.username }}</li>
+              <li>
+                <span>Email</span>
+                <a href="mailto:{{ request.user.email }}"
+                  >{{ request.user.email }}</a
+                >
+              </li>
+              <li><span>First Name</span>{{ request.user.first_name }}</li>
+              <li><span>Last Name</span>{{ request.user.last_name }}</li>
+              {% if user_profile %}
+              <li><span>Phone Number</span>{{ user_profile.phone }}</li>
+              <li><span>Skill/Occupation</span>{{ user_profile.skill }}</li>
+              <li>
+                <span>Registration Date</span>{{ user_profile.registration_date|date:"F d, Y H:i a" }}
+              </li>
+              <li><span>Biography</span>{{ user_profile.bio }}</li>
+              {% endif %}
+            </ul>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Dashboard Cover End -->
+{% include 'trelix/footer.html' %} {% endblock %}
