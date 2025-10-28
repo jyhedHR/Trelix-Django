@@ -1,0 +1,276 @@
+{% extends "trelix/base.html" %} 
+{% load static %}
+{% block title %}Événements - Trelix{% endblock %} 
+{% block content %} 
+{% include 'trelix/header.html' %}
+
+<!-- Promo Section Start -->
+<section class="promo-sec">
+   <div class="container">
+      <div class="row">
+         <div class="col-lg-12 text-center">
+            <h1 class="display-2 text-white">Nos Événements</h1>
+            <nav aria-label="breadcrumb mt-0">
+               <ol class="breadcrumb justify-content-center">
+                  <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+                  <li class="breadcrumb-item active" aria-current="page">Événements</li>
+               </ol>
+            </nav>
+         </div>
+      </div>
+   </div>
+</section>
+<!-- Promo Section End -->
+
+<!-- Event Section Start -->
+<div class="event-main sec-padding">
+   <div class="container">
+      <div class="row g-4">
+         {% for evenement in evenements %}
+         <div class="col-xl-4 col-md-6">
+            <div class="event-entry shadow-sm overflow-hidden rounded-4">
+               <div class="event-thumb">
+                  {% if evenement.image %}
+                     <a href="#"><img class="img-fluid" src="{{ evenement.image.url }}" alt="{{ evenement.titre }}"></a>
+                  {% else %}
+                     <a href="#"><img class="img-fluid" src="{% static 'images/event1.jpg' %}" alt="{{ evenement.titre }}"></a>
+                  {% endif %}
+               </div>
+               <div class="entry-content p-4">
+                  <div class="event-meta d-flex justify-content-between mb-2">
+                     <span><i class="feather-icon icon-calendar s"></i> {{ evenement.date_debut|date:"d M, Y" }}</span>
+                     <span class="event-location"><i class="feather-icon icon-map-pin "></i>{{ evenement.lieu }}</span>
+                  </div>
+                  <h3 class="display-5">
+                     <a href="#">{{ evenement.titre }}</a>
+                  </h3>
+
+                  <div class="event-footer d-flex justify-content-between align-items-center">
+                     <span class="small text-primary">
+                        <i class="feather-icon icon-users me-1"></i>{{ evenement.capacite_max }} Participants
+                     </span>
+      <a href="{% url 'evenement:detail_evenement' evenement.id %}" class="btn btn-outline-primary rounded-5">
+    Voir Détails <i class="feather-icon icon-arrow-right"></i>
+</a>
+
+                  </div>
+               </div>
+            </div>
+         </div> <!-- Event Entry End -->
+         {% empty %}
+         <div class="col-12">
+            <div class="text-center py-5">
+               <i class="feather-icon icon-calendar display-1 text-muted"></i>
+               <h3 class="mt-3 text-muted">Aucun événement disponible</h3>
+               <p class="text-muted mb-4">Revenez plus tard pour découvrir nos prochains événements.</p>
+               {% if user.is_staff %}
+               <a href="{% url 'admin:evenement_evenement_add' %}" class="btn btn-primary">
+                  <i class="feather-icon icon-plus"></i> Créer le premier événement
+               </a>
+               {% endif %}
+            </div>
+         </div>
+         {% endfor %}
+         
+         <!-- Pagination -->
+         {% if evenements.has_other_pages %}
+         <div class="col-lg-12">
+            <div class="pager text-center mt-5">
+               {% if evenements.has_previous %}
+               <a href="?page={{ evenements.previous_page_number }}" class="next-btn"> 
+                  <i class="feather-icon icon-arrow-left"></i>
+               </a>
+               {% endif %}
+               
+               {% for i in evenements.paginator.page_range %}
+                  {% if evenements.number == i %}
+                  <span class="current">{{ i }}</span>
+                  {% else %}
+                  <a href="?page={{ i }}">{{ i }}</a>
+                  {% endif %}
+               {% endfor %}
+               
+               {% if evenements.has_next %}
+               <a href="?page={{ evenements.next_page_number }}" class="prev-btn"> 
+                  <i class="feather-icon icon-arrow-right"></i>
+               </a>
+               {% endif %}
+            </div>
+         </div>
+         {% endif %}
+      </div>
+   </div>
+</div>
+<!-- Event Section End -->
+
+<!-- Newsletter Section Start -->
+<section class="newsletter bg-primary">
+   <div class="container">
+      <div class="row align-items-center">
+         <div class="col-lg-8">
+            <span class="badge-lg bg-white text-primary rounded-5">Restez Informé</span>
+            <h2 class="display-2 fw-bold text-info">Abonnez-vous à notre <span class="color-info">Newsletter</span></h2>
+         </div>
+         <div class="col-lg-4">
+            <div class="newsletter-form">
+               <form action="#">
+                  <input class="form-control rounded-5 bg-info" type="email" placeholder="Adresse Email">
+                  <button class="btn btn-secondary w-100 rounded-5 mt-4">S'abonner</button>
+               </form>
+            </div>
+         </div>
+      </div>
+   </div>
+</section>
+<!-- Newsletter Section End -->
+
+<style>
+.event-entry {
+   background: white;
+   transition: all 0.3s ease;
+   border: 1px solid #e9ecef;
+}
+
+.event-entry:hover {
+   transform: translateY(-5px);
+   box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.event-thumb {
+   overflow: hidden;
+   height: 250px;
+}
+
+.event-thumb img {
+   width: 100%;
+   height: 100%;
+   object-fit: cover;
+   transition: transform 0.5s ease;
+}
+
+.event-entry:hover .event-thumb img {
+   transform: scale(1.1);
+}
+
+.entry-content {
+   background: white;
+}
+
+.display-5 {
+   font-size: 1.25rem;
+   font-weight: 600;
+   line-height: 1.4;
+   margin-bottom: 1rem;
+}
+
+.event-meta {
+   font-size: 0.875rem;
+   color: #6c757d;
+}
+
+.event-meta span {
+   display: flex;
+   align-items: center;
+   gap: 5px;
+}
+
+.event-footer {
+   border-top: 1px solid #e9ecef;
+   padding-top: 1rem;
+   margin-top: 1rem;
+}
+
+.event-footer .small {
+   display: flex;
+   align-items: center;
+   font-weight: 500;
+}
+
+.event-footer .feather-icon {
+   color: #0d6efd;
+   font-size: 1.1rem;
+}
+
+.pager {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   gap: 10px;
+}
+
+.pager a, .pager span {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   width: 40px;
+   height: 40px;
+   border-radius: 8px;
+   text-decoration: none;
+   font-weight: 500;
+   transition: all 0.3s ease;
+}
+
+.pager a {
+   background: white;
+   border: 1px solid #dee2e6;
+   color: #495057;
+}
+
+.pager a:hover {
+   background: #0d6efd;
+   border-color: #0d6efd;
+   color: white;
+}
+
+.pager .current {
+   background: #0d6efd;
+   color: white;
+   border: 1px solid #0d6efd;
+}
+
+.next-btn, .prev-btn {
+   background: #f8f9fa !important;
+   border: 1px solid #dee2e6 !important;
+}
+
+.next-btn:hover, .prev-btn:hover {
+   background: #0d6efd !important;
+   border-color: #0d6efd !important;
+   color: white !important;
+}
+
+.sec-padding {
+   padding: 80px 0;
+}
+
+.event-main {
+   background: #f8f9fa;
+   min-height: 60vh;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+   .event-thumb {
+      height: 200px;
+   }
+   
+   .display-5 {
+      font-size: 1.1rem;
+   }
+   
+   .event-meta {
+      flex-direction: column;
+      gap: 10px;
+      align-items: start;
+   }
+   
+   .event-footer {
+      flex-direction: column;
+      gap: 15px;
+      text-align: center;
+   }
+}
+</style>
+
+{% include 'trelix/footer.html' %} 
+{% endblock %}
