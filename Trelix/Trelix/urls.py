@@ -18,6 +18,8 @@ urlpatterns = [
     path('chapters/', include('chapitre.urls')),
 
     path('evenements/', include('evenement.urls')),  
+    path('participation/', include('participation.urls')),
+
     
 
     

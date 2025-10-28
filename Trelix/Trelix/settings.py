@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'chapitre',
     'evenement',
     'examan',
+    'participation',
 ]
 
 MIDDLEWARE = [
