@@ -17,6 +17,10 @@ urlpatterns = [
     path('course/<int:course_id>/', views.single_course_view, name='single-course'),
     path('chapters/', include('chapitre.urls')),
 
+    path('evenements/', include('evenement.urls')),  
+    
+
+    
 ]
 
 urlpatterns += [
