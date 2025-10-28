@@ -1,7 +1,6 @@
-from django.contrib import admin
-from .models import Exam, Question, StudentExam, Certificate
 
-admin.site.register(Exam)
-admin.site.register(Question)
-admin.site.register(StudentExam)
-admin.site.register(Certificate)
+from django.contrib import admin
+
+admin.site.site_header = "Trelix E-Learning Admin"
+admin.site.site_title = "Trelix Admin Portal"
+admin.site.index_title = "Welcome to Trelix Administration"
