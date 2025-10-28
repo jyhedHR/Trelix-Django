@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'Trelix',
     'cours',
-    'chapitre'
+    'chapitre',
+    'evenement',
 ]
 
 MIDDLEWARE = [
@@ -75,6 +76,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media',  # ✅ Important pour les médias
+
             ],
         },
     },
@@ -143,6 +146,11 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"), 
 ]
+
+
+# Media files (uploaded by users)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
