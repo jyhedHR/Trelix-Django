@@ -3,7 +3,88 @@
 {% block title %} Courses {% endblock %} 
 {% block content %} 
 {% include 'trelix/header.html' %}
+ <!-- Promo Section Start -->
+   <section class="promo-sec" style="background: url('images/promo-bg.jpg')no-repeat center center / cover;">
+      <img src="images/promo-left.png" alt="" class="anim-img">
+      <img src="images/promo-right.png" alt="" class="anim-img anim-right">
+      <div class="container">
+         <div class="row">
+            <div class="col-lg-12 text-center">
+               <h1 class="display-2 text-white">Courses</h1>
+               <nav aria-label="breadcrumb mt-0">
+                  <ol class="breadcrumb">
+                     <li class="breadcrumb-item"><a href="index-2.html">Home</a></li>
+                     <li class="breadcrumb-item active" aria-current="page">Courses</li>
+                  </ol>
+               </nav>
+            </div>
+         </div>
+      </div>
+   </section>
+   <!-- Promo Section End -->
 
+   <!-- Courses Section Start -->
+   <section class="courses-sec sec-padding">
+      <div class="container">
+         <div class="row">
+            <div class="col-lg-4 order-2 order-lg-1">
+               <aside class="sidebar sidebar-spacing">
+                  <div class="widget">
+                     <h3 class="widget-title">Level</h3>
+                     <div class="widget-inner">
+                        <ul>
+                           <li>
+                              <input id="all-1" class="checkbox-custom" name="all-1" type="checkbox">
+                              <label for="all-1" class="checkbox-custom-label">All Level</label>
+                              <span class="count">(15)</span>
+                           </li>
+                           <li>
+                              <input id="begin" class="checkbox-custom" name="begin" type="checkbox">
+                              <label for="begin" class="checkbox-custom-label">Beginner</label>
+                              <span class="count">(02)</span>
+                           </li>
+                           <li>
+                              <input id="inter" class="checkbox-custom" name="inter" type="checkbox">
+                              <label for="inter" class="checkbox-custom-label">Intermediate</label>
+                              <span class="count">(10)</span>
+                           </li>
+                           <li>
+                              <input id="expert" class="checkbox-custom" name="expert" type="checkbox">
+                              <label for="expert" class="checkbox-custom-label">Expert</label>
+                              <span class="count">(08)</span>
+                           </li>
+                        </ul>
+                     </div>
+                  </div> <!-- Widget End -->
+               </aside>
+            </div>
+            <div class="col-lg-8 order-1 order-lg-2">
+               <div class="course-lists row gy-4 mt-3">
+          {% for course in courses %}
+          <div class="col-xl-6 col-md-6">
+            <div class="course-entry-3 card rounded-2 bg-white border">
+              <div class="card-media position-relative">
+                <a href="#"><img class="card-img-top" src="{{ course.image.url }}" alt="{{ course.title }}"></a>
+              </div>
+              <div class="card-body">
+                <h3 class="sub-title mb-0">
+                  <a href="#">{{ course.title }}</a>
+                </h3>
+                <p>{{ course.description|truncatewords:20 }}</p>
+                <div class="course-footer d-flex align-items-center justify-content-between pt-3">
+                  <span class="badge bg-primary">{{ course.level|title }}</span>
+                  <a href="{% url 'course-detail' course.id %}">Enroll Now <i class="feather-icon icon-arrow-right"></i></a>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+            </div>
+         </div>
+      </div>
+   </section>
+   <!-- Courses Section End -->
 
 
 {% include 'trelix/footer.html' %} {% endblock %}

@@ -1,6 +1,8 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.contrib.auth import views as auth_views
+from django.conf import settings
+from django.conf.urls.static import static
 from . import views
 
 urlpatterns = [
@@ -9,10 +11,12 @@ urlpatterns = [
     path('signup/', views.signup_view, name='signup'),  
     path('signin/', views.signin_view, name='signin'),  
     path('signout/', views.signout_view, name='signout'),
-    path('courses/', views.courses_view, name='courses'),      
+    path('courses/', include('cours.urls')),      
     path('exams/', views.exams_view, name='exams'),            
     path('profile/', views.profile_view, name='profile'),      
     path('course/<int:course_id>/', views.single_course_view, name='single-course'),
+    path('chapters/', include('chapitre.urls')),
+
 ]
 
 urlpatterns += [
@@ -21,3 +25,5 @@ urlpatterns += [
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
