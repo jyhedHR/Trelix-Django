@@ -1,8 +1,10 @@
 from django.contrib import admin
-from django.urls import path
 from examan.models import Exam 
 from examan import views as exam_views 
+from django.urls import path, include
 from django.contrib.auth import views as auth_views
+from django.conf import settings
+from django.conf.urls.static import static
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
@@ -13,9 +15,17 @@ urlpatterns = [
     path('signup/', views.signup_view, name='signup'),  
     path('signin/', views.signin_view, name='signin'),  
     path('signout/', views.signout_view, name='signout'),
-    path('courses/', views.courses_view, name='courses'),                
+    path('courses/', include('cours.urls')),                 
     path('profile/', views.profile_view, name='profile'),      
     path('course/<int:course_id>/', views.single_course_view, name='single-course'),
+    path('chapters/', include('chapitre.urls')),
+
+    path('evenements/', include('evenement.urls')),  
+    path('participation/', include('participation.urls')),
+
+    
+
+    
 ]
 
 urlpatterns += [

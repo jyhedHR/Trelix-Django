@@ -6,6 +6,7 @@ from .forms import SignUpForm
 import os
 import random
 import string
+from evenement.models import Evenement  # ✅ Import ajouté
 
 @login_required(login_url='signin')
 def home(request):
@@ -69,3 +70,10 @@ def jitsi_meeting(request):
     # Generate a random room name or get from request
     room_name = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
     return render(request, 'trelix/meeting.html', {'room_name': room_name})
+def evenement(request):
+    if request.user.is_authenticated:
+        evenements = Evenement.objects.all().order_by('-date_debut')
+        return render(request, 'trelix/evenement.html', {'evenements': evenements})
+    else:
+        return redirect('signin')
+

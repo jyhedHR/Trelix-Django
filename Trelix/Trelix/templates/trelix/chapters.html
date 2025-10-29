@@ -1,0 +1,155 @@
+{% extends "trelix/base.html" %}
+{% load static %}
+{% block title %} {{ course.title }} {% endblock %}
+
+{% block content %}
+{% include 'trelix/header.html' %}
+
+<section class="course-lession bg-shade sec-padding overflow-hidden">
+  <div class="container-fluid px-0">
+    <div class="row">
+
+      <!-- Sidebar Chapitres -->
+      <div class="col-lg-4">
+        <aside class="sidebar position-relative lession-sidebar px-4">
+          <h1 class="display-4 mb-4">{{ course.title }}</h1>
+          <div class="lesson-container list-group" id="chapter-list">
+            {% for chapter in chapters %}
+            <button type="button" class="list-group-item list-group-item-action {% if forloop.first %}active{% endif %}"
+                    data-index="{{ forloop.counter0 }}"
+                    data-title="{{ chapter.title|escapejs }}"
+                    data-description="{{ chapter.description|escapejs }}"
+                    data-video="{% if chapter.video %}{{ chapter.video.url }}{% endif %}">
+              {{ forloop.counter }}. {{ chapter.title }}
+            </button>
+            {% endfor %}
+          </div>
+        </aside>
+      </div>
+
+      <!-- Contenu du chapitre -->
+      <div class="col-lg-8">
+        <div class="lesstion-wrap bg-white shadow-sm rounded p-4">
+
+          <!-- Video -->
+          <div class="lession-video mb-4" id="chapter-video" style="transition: opacity 0.3s;">
+            {% if selected_chapter and selected_chapter.video %}
+            <video controls width="100%" id="video-player" class="rounded shadow-sm">
+              <source src="{{ selected_chapter.video.url }}" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+            {% else %}
+            <p id="no-video-text" class="text-center text-muted py-5 border rounded">
+              No video available for this chapter.
+            </p>
+            {% endif %}
+          </div>
+
+          <!-- Contenu -->
+          <div class="lession-content" style="transition: opacity 0.3s;">
+            <h3 class="display-5 mb-3" id="chapter-title">
+              {% if selected_chapter %}
+                Chapitre 1: {{ selected_chapter.title }}
+              {% else %}
+                {{ course.title }}
+              {% endif %}
+            </h3>
+            <p id="chapter-description" class="text-muted">
+              {% if selected_chapter %}
+                {{ selected_chapter.description }}
+              {% else %}
+                No content available.
+              {% endif %}
+            </p>
+          </div>
+
+          <!-- Navigation Next / Previous -->
+          <div class="d-flex justify-content-between mt-4">
+            <button type="button" class="btn btn-outline-primary" id="prev-chapter">Previous</button>
+            <button type="button" class="btn btn-outline-primary" id="next-chapter">Next</button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% include 'trelix/footer.html' %}
+
+<!-- JS pour contenu dynamique + navigation -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const buttons = Array.from(document.querySelectorAll('#chapter-list .list-group-item'));
+  const titleEl = document.getElementById('chapter-title');
+  const descEl = document.getElementById('chapter-description');
+  const videoContainer = document.getElementById('chapter-video');
+  let currentIndex = 0;
+
+  function showChapter(index) {
+    const btn = buttons[index];
+    if (!btn) return;
+
+    // Met à jour l'état actif
+    buttons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentIndex = index;
+
+    const newTitle = btn.dataset.title;
+    const newDesc = btn.dataset.description;
+    const newVideo = btn.dataset.video;
+
+    // Animation douce pour le contenu
+    titleEl.style.opacity = 0;
+    descEl.style.opacity = 0;
+    videoContainer.style.opacity = 0;
+
+    setTimeout(() => {
+      titleEl.textContent = `Chapitre ${index + 1}: ${newTitle}`;
+      descEl.textContent = newDesc;
+
+      videoContainer.innerHTML = '';
+      if (newVideo) {
+        const videoEl = document.createElement('video');
+        videoEl.setAttribute('controls', '');
+        videoEl.setAttribute('width', '100%');
+        videoEl.classList.add('rounded', 'shadow-sm');
+        const sourceEl = document.createElement('source');
+        sourceEl.src = newVideo;
+        sourceEl.type = 'video/mp4';
+        videoEl.appendChild(sourceEl);
+        videoContainer.appendChild(videoEl);
+      } else {
+        videoContainer.innerHTML = '<p id="no-video-text" class="text-center text-muted py-5 border rounded">No video available for this chapter.</p>';
+      }
+
+      // Fade in
+      titleEl.style.opacity = 1;
+      descEl.style.opacity = 1;
+      videoContainer.style.opacity = 1;
+    }, 200);
+  }
+
+  // Initialisation
+  showChapter(0);
+
+  // Click sur un chapitre
+  buttons.forEach((btn, i) => {
+    btn.addEventListener('click', () => showChapter(i));
+  });
+
+  // Navigation Previous / Next
+  document.getElementById('prev-chapter').addEventListener('click', () => {
+    const newIndex = (currentIndex > 0) ? currentIndex - 1 : 0;
+    showChapter(newIndex);
+  });
+
+  document.getElementById('next-chapter').addEventListener('click', () => {
+    const newIndex = (currentIndex < buttons.length - 1) ? currentIndex + 1 : buttons.length - 1;
+    showChapter(newIndex);
+  });
+});
+</script>
+
+{% endblock %}
