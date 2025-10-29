@@ -69,7 +69,7 @@
                            <a class="nav-link" href="#details"><i class="feather-icon icon-info"></i> Détails</a>
                         </li>
                         <li class="nav-item">
-                           <a class="nav-link" href="#location"><i class="feather-icon icon-map-pin"></i> Localisation</a>
+                           <a class="nav-link" href="#location"><i class="feather-icon icon-tag text"></i> Description</a>
                         </li>
                         <li class="nav-item">
                            <a class="nav-link" href="#about"><i class="feather-icon icon-book"></i> À Propos</a>
@@ -172,13 +172,11 @@
                      
                      <!-- Location Section -->
                      <div class="inner-sec" id="location">
-                        <h2 class="display-4 fw-bold">Localisation & Accès</h2>
+                        <h2 class="display-4 fw-bold">Description</h2>
                         <div class="location-info">
                            <div class="d-flex align-items-start mb-4">
-                              <i class="feather-icon icon-map-pin text-primary me-3 mt-1"></i>
                               <div class="flex-grow-1">
-                                 <h5 class="display-5 mb-2">Lieu de l'événement</h5>
-                                 <p class="fs-5 mb-1"><strong>{{ evenement.lieu }}</strong></p>
+                                 <p class="fs-5 mb-1"><strong>{{ evenement.description }}</strong></p>
                                  {% if evenement.adresse %}
                                     <p class="text-muted mb-3">{{ evenement.adresse }}</p>
                                  {% endif %}

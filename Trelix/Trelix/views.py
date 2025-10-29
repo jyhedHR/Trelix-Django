@@ -61,10 +61,4 @@ def single_course_view(request, course_id):
     # Add logic to display single course detail
     return render(request, 'trelix/single_course.html', {'course_id': course_id})
 
-def evenement(request):
-    if request.user.is_authenticated:
-        evenements = Evenement.objects.all().order_by('-date_debut')
-        return render(request, 'trelix/evenement.html', {'evenements': evenements})
-    else:
-        return redirect('signin')
 
