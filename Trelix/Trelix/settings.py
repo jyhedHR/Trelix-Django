@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     
     'participation',
     'widget_tweaks',
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -77,6 +78,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',  # ✅ pour MEDIA_URL
+                'accounts.context_processors.user_profile',  # User profile for all templates
             ],
         },
     },
@@ -212,9 +214,35 @@ print("STABILITY_API_KEY:", STABILITY_API_KEY)
 # NLP Cloud
 NLP_CLOUD_API_KEY = os.getenv('NLP_CLOUD_API_KEY')
 NLP_CLOUD_MODEL = os.getenv('NLP_CLOUD_MODEL')
+# Session configuration (required for OAuth flow)
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+SESSION_COOKIE_HTTPONLY = True
+
+# 2FA/TOTP Configuration
+TOTP_ISSUER_NAME = 'Trelix'
 
 # HUGGINGFACE API TOKEN
 HF_API_TOKEN=os.getenv('HF_API_TOKEN')
+
+# -------------------------------------------------------------
+# 📧 EMAIL CONFIGURATION
+# -------------------------------------------------------------
+# For DEVELOPMENT: Use console backend (emails will be printed to console)
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# For PRODUCTION: Use SMTP backend to send actual emails
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# SMTP Configuration - Read from .env file
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'noreply@trelix.com')
+SERVER_EMAIL = DEFAULT_FROM_EMAIL  # Used for error messages
+
 # -------------------------------------------------------------
 # 🧱 DEFAULT PRIMARY KEY FIELD
 # -------------------------------------------------------------
