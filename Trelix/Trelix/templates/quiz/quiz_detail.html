@@ -1,35 +1,89 @@
 {% extends "trelix/base.html" %}
 {% block title %}{{ quiz.title }}{% endblock %}
+
 {% block content %}
-<h2 class="mb-3">{{ quiz.title }}</h2>
-<p class="text-muted">{{ quiz.description }}</p>
+<div class="container py-4">
 
-<form method="post">
-  {% csrf_token %}
-
-  {% for q in quiz.questions.all %}
-    <div class="card mb-3">
-      <div class="card-body">
-        <h5 class="card-title">{{ forloop.counter }}. {{ q.text }}</h5>
-
-        {% for c in q.choices.all %}
-          <div class="form-check">
-            <input class="form-check-input"
-                   type="radio"
-                   name="question_{{ q.id }}"
-                   id="choice_{{ c.id }}"
-                   value="{{ c.id }}">
-            <label class="form-check-label" for="choice_{{ c.id }}">
-              {{ c.text }}
-            </label>
-          </div>
-        {% endfor %}
-      </div>
+    <!-- Quiz Header -->
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-primary">
+            🧠 {{ quiz.title }}
+        </h2>
+        <p class="text-secondary">{{ quiz.description }}</p>
     </div>
-  {% empty %}
-    <div class="alert alert-warning">No questions available.</div>
-  {% endfor %}
 
-  <button class="btn btn-primary">Submit my answers</button>
-</form>
+    <form method="post">
+        {% csrf_token %}
+
+        {% for q in quiz.questions.all %}
+            <div class="card shadow-sm mb-4 rounded-3 border-0">
+                <div class="card-header bg-primary text-white fw-semibold rounded-top">
+                    Question {{ forloop.counter }}
+                </div>
+
+                <div class="card-body">
+                    <p class="fw-bold mb-3">{{ q.text }}</p>
+
+                    {% for c in q.choices.all %}
+                        <label class="choice-box p-3 mb-2 rounded d-flex align-items-center">
+                            <input class="form-check-input me-2" 
+                                type="radio" 
+                                name="question_{{ q.id }}" 
+                                value="{{ c.id }}">
+                            <span>{{ c.text }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+        {% empty %}
+            <div class="alert alert-warning text-center">
+                😢 No questions available for this quiz.
+            </div>
+        {% endfor %}
+
+        <div class="text-center">
+            <button class="btn btn-success btn-lg px-5 fw-bold mt-3">
+                ✅ Submit My Answers
+            </button>
+        </div>
+    </form>
+</div>
+
+
+<!-- Style Enhancements -->
+<style>
+    .choice-box {
+        cursor: pointer;
+        background: #f8f9fa;
+        border: 2px solid transparent;
+        transition: 0.2s ease-in-out;
+    }
+    .choice-box:hover {
+        background: #e8f2ff;
+        border-color: #0d6efd;
+    }
+    .choice-box input[type="radio"] {
+        transform: scale(1.2);
+    }
+    /* Highlight selected */
+    .choice-box.selected {
+        background: #d9f8d9 !important;
+        border-color: #28a745;
+        font-weight: 600;
+    }
+</style>
+
+<!-- Small Interaction Script -->
+<script>
+    document.querySelectorAll('.choice-box input').forEach(el => {
+        el.addEventListener("change", () => {
+            const group = el.name;
+            document.querySelectorAll(`input[name="${group}"]`).forEach(i => {
+                i.closest('.choice-box').classList.remove("selected");
+            });
+            el.closest('.choice-box').classList.add("selected");
+        });
+    });
+</script>
+
 {% endblock %}

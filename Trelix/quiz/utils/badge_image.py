@@ -1,30 +1,37 @@
 import os
 import requests
+import base64
 from PIL import Image
 from io import BytesIO
 from django.conf import settings
 
-STABILITY_KEY = os.environ.get("STABILITY_KEY")
+STABILITY_KEY = settings.STABILITY_API_KEY
 
 def generate_badge_image(badge_name):
+
     if not STABILITY_KEY:
-        print("❌ Clé API Stability manquante")
+        print("❌ API key missing")
         return None
 
-    url = "https://api.stability.ai/v2beta/stable-image/generate/core"
+    url = "https://api.stability.ai/v2beta/stable-image/generate/sd3"
+
     headers = {
         "Authorization": f"Bearer {STABILITY_KEY}",
+        "Accept": "application/json"
+        # ❌ NE PAS mettre Content-Type ici !
     }
 
-    prompt = f"A shiny gold video game badge with star, 3D metallic effect, high quality, text: {badge_name}"
-
-    data = {
-        "prompt": prompt,
-        "aspect_ratio": "1:1",
+    form_data = {
+        "prompt": f"{badge_name} medal, round badge, shiny metallic texture, star in center, videogame style, glowing rim, high detail, award emblem",
         "output_format": "png",
+        "size": "512x512"
     }
 
-    response = requests.post(url, headers=headers, data=data)
+    # ✅ multipart/form-data = utiliser 'files'
+    response = requests.post(url, headers=headers, files=form_data)
+
+    print("DEBUG Status:", response.status_code)
+    print("DEBUG Resp:", response.text[:300])
 
     file_name = f"{badge_name.replace(' ', '_').lower()}.png"
     badge_folder = os.path.join(settings.MEDIA_ROOT, "badges")
@@ -32,20 +39,16 @@ def generate_badge_image(badge_name):
     image_path = os.path.join(badge_folder, file_name)
 
     if response.status_code == 200:
-        image = Image.open(BytesIO(response.content))
+        data = response.json()
+        img_base64 = data["artifacts"][0]["base64"]
+
+        img_bytes = base64.b64decode(img_base64)
+        image = Image.open(BytesIO(img_bytes))
         image.save(image_path)
-        print(f"✅ Badge IA généré : {file_name}")
+        print("✅ Image OK !")
+
     else:
-        print("⚠️ Erreur IA → Fallback")
-        fallback = Image.new("RGB", (350, 350), (200, 50, 50))
-        fallback.save(image_path)
+        print("⚠️ FALLBACK —", response.text)
+        Image.new("RGB", (350, 350), (50, 100, 200)).save(image_path)
 
     return f"badges/{file_name}"
-
-import os
-from django.conf import settings
-
-def generate_badge_image(badge_name):
-    if not settings.STABILITY_API_KEY:
-        print("❌ Clé API Stability manquante")
-        return None
