@@ -16,8 +16,16 @@ from .utils import GeminiFlashcardGenerator, get_course_content_for_flashcards
 
 
 def course_list(request):
-    courses = Course.objects.filter(is_published=True)
-    return render(request, 'Trelix/courses.html', {'courses': courses})
+    try:
+        courses = Course.objects.filter(is_published=True)
+        return render(request, 'trelix/courses.html', {'courses': courses})
+    except Exception as e:
+        # Log error for debugging in production
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error in course_list: {str(e)}")
+        # Return empty queryset to prevent server error
+        return render(request, 'trelix/courses.html', {'courses': Course.objects.none()})
 
 @csrf_exempt
 @require_POST
@@ -59,7 +67,7 @@ def course_detail(request, course_id):
     ).values_list('chapter_id', 'score')
     user_scores_dict = {chapter_id: score for chapter_id, score in user_scores}
 
-    return render(request, 'Trelix/chapters.html', {
+    return render(request, 'trelix/chapters.html', {
         'course': course,
         'chapters': chapters,
         'selected_chapter': selected_chapter,
@@ -192,7 +200,7 @@ def download_summary_pdf(request, course_id):
     chapters = Chapter.objects.filter(course=course).order_by('id')
     full_text = "\n\n".join([c.description for c in chapters if c.description])
 
-    html_string = render_to_string('Trelix/summary_pdf.html', {
+    html_string = render_to_string('trelix/summary_pdf.html', {
         'course': course,
         'summary': full_text.replace("\n", "<br>")
     })

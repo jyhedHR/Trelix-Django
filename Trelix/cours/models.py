@@ -2,6 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 import re
 from django.contrib.auth.models import User
+from cloudinary.models import CloudinaryField
 
 class Course(models.Model):
     LEVEL_CHOICES = [
@@ -20,7 +21,7 @@ class Course(models.Model):
     )
     level = models.CharField(max_length=20, choices=LEVEL_CHOICES, default='beginner')
     is_published = models.BooleanField(default=False)
-    image = models.ImageField(upload_to='courses/', blank=True, null=True)  
+    image = CloudinaryField('image', blank=True, null=True)  
 
     def __str__(self):
         return self.title

@@ -5,7 +5,8 @@
 {% include 'trelix/header.html' %}
 
 <!-- Promo Section Start -->
-<section class="promo-sec" style="background: url('{% static 'images/promo-bg.jpg' %}') no-repeat center center / cover;">
+{% get_static_prefix as STATIC_PREFIX %}
+<section class="promo-sec" style="background-image: url('{{ STATIC_PREFIX }}images/promo-bg.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
   <img src="{% static 'images/promo-left.png' %}" alt="" class="anim-img">
   <img src="{% static 'images/promo-right.png' %}" alt="" class="anim-img anim-right">
   <div class="container">
@@ -64,11 +65,17 @@
           <div class="col-xl-6 col-md-6">
             <div class="course-entry-3 card rounded-2 bg-white border">
               <div class="card-media position-relative">
-                <a href="#"><img class="card-img-top" src="{{ course.image.url }}" alt="{{ course.title }}"></a>
+                <a href="{% url 'course-detail' course.id %}">
+                  {% if course.image %}
+                    <img class="card-img-top" src="{{ course.image.url }}" alt="{{ course.title }}">
+                  {% else %}
+                    <img class="card-img-top" src="https://via.placeholder.com/400x300?text=No+Image" alt="{{ course.title }}">
+                  {% endif %}
+                </a>
               </div>
               <div class="card-body">
                 <h3 class="sub-title mb-0">
-                  <a href="#">{{ course.title }}</a>
+                  <a href="{% url 'course-detail' course.id %}">{{ course.title }}</a>
                 </h3>
                 <p>{{ course.description|truncatewords:20 }}</p>
                 <div class="course-footer d-flex align-items-center justify-content-between pt-3">

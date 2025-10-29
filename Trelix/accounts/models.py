@@ -4,6 +4,7 @@ from django.core.validators import RegexValidator
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.core.cache import cache
+from cloudinary.models import CloudinaryField
 
 
 class TrustedDevice(models.Model):
@@ -30,7 +31,7 @@ class Profile(models.Model):
     
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     user_type = models.CharField(max_length=20, choices=USER_TYPE_CHOICES)
-    profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+    profile_picture = CloudinaryField('image', blank=True, null=True)
     
     phone_regex = RegexValidator(
         regex=r'^\+?1?\d{9,15}$',
