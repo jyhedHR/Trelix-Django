@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'evenement',
     'examan',
     'participation',
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [

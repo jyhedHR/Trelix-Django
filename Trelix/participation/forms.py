@@ -12,11 +12,11 @@ class ParticipationForm(forms.ModelForm):
             'annee_experience': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
         }
         labels = {
-            'role': 'Rôle dans l\'événement',
-            'niveau_etude': 'Niveau d\'étude',
-            'domaine_competence': 'Domaine de compétence',
-            'experience_precedente': 'Expérience précédente dans ce domaine',
-            'annee_experience': 'Années d\'expérience',
+            'role': 'Role in the event',
+            'niveau_etude': 'study_level',
+            'domaine_competence': 'area_of_competence',
+            'experience_precedente': 'previous_experience',
+            'annee_experience': 'year_of_experience',
         }
     
     def __init__(self, *args, **kwargs):
