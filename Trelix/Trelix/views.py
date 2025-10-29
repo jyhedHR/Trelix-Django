@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect ,get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
@@ -7,6 +7,9 @@ import os
 import random
 import string
 from evenement.models import Evenement  # ✅ Import ajouté
+from quiz.models import Quiz, Choice, UserBadge
+from django.contrib import messages
+
 
 @login_required(login_url='signin')
 def home(request):

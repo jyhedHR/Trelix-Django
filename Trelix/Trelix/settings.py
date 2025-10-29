@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'chapitre',
     'evenement',
     'examan',
+     'quiz',
+    
     'participation',
 ]
 
@@ -196,6 +198,15 @@ JAZZMIN_SETTINGS["site_logo"] = "images/trelix_blanc.png"
 # Media files (uploads)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+STABILITY_API_KEY = os.getenv("STABILITY_API_KEY")
+print("STABILITY_API_KEY:", STABILITY_API_KEY)
 
 # NLP Cloud
 NLP_CLOUD_API_KEY = os.getenv('NLP_CLOUD_API_KEY')

@@ -1,0 +1,35 @@
+{% extends "trelix/base.html" %}
+{% block title %}{{ quiz.title }}{% endblock %}
+{% block content %}
+<h2 class="mb-3">{{ quiz.title }}</h2>
+<p class="text-muted">{{ quiz.description }}</p>
+
+<form method="post">
+  {% csrf_token %}
+
+  {% for q in quiz.questions.all %}
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title">{{ forloop.counter }}. {{ q.text }}</h5>
+
+        {% for c in q.choices.all %}
+          <div class="form-check">
+            <input class="form-check-input"
+                   type="radio"
+                   name="question_{{ q.id }}"
+                   id="choice_{{ c.id }}"
+                   value="{{ c.id }}">
+            <label class="form-check-label" for="choice_{{ c.id }}">
+              {{ c.text }}
+            </label>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% empty %}
+    <div class="alert alert-warning">No questions available.</div>
+  {% endfor %}
+
+  <button class="btn btn-primary">Submit my answers</button>
+</form>
+{% endblock %}

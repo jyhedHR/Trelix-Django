@@ -19,8 +19,9 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),      
     path('course/<int:course_id>/', views.single_course_view, name='single-course'),
     path('chapters/', include('chapitre.urls')),
-
     path('evenements/', include('evenement.urls')),  
+   path("quiz/", include("quiz.urls")),
+
     path('participation/', include('participation.urls')),
 
     

@@ -1,0 +1,80 @@
+{% extends "trelix/base.html" %}
+{% block title %}Quiz Results{% endblock %}
+{% block content %}
+
+<style>
+    .score-zoom {
+        animation: pop 0.9s ease-out forwards;
+    }
+    @keyframes pop {
+        0% { transform: scale(0.3); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    .badge-earned {
+        animation: glow 1.2s infinite alternate;
+    }
+    @keyframes glow {
+        from { filter: drop-shadow(0 0 3px gold); }
+        to { filter: drop-shadow(0 0 10px gold); }
+    }
+</style>
+
+<div class="container text-center mt-5">
+
+    <h2 class="mb-3 fw-bold text-primary">🎯 Your Score</h2>
+
+    <!-- ✅ Score animé -->
+    <h1 class="display-3 fw-bold text-success score-zoom">{{ score }}%</h1>
+
+    <!-- ✅ Barre de progression stylée -->
+    <div class="progress mx-auto my-4" style="height: 22px; max-width: 500px;">
+      <div class="progress-bar progress-bar-striped progress-bar-animated 
+          {% if passed %}bg-success{% else %}bg-danger{% endif %}"
+          style="width: {{ score }}%;">
+      </div>
+    </div>
+
+    {% if passed %}
+      <div class="alert alert-success mt-4 rounded-pill shadow-sm">
+        ✅ Congratulations! You passed the quiz 🎉
+      </div>
+
+      {% if badge %}
+      <div class="alert alert-warning shadow-sm p-4">
+        🏅 <strong>A new badge has been unlocked!</strong> <br><br>
+
+        {% if badge.icon %}
+        <div class="badge-earned mb-3">
+            <img src="{{ badge.icon.url }}" width="120" alt="Badge">
+        </div>
+        {% else %}
+        <p class="text-muted">Badge unlocked but no icon available yet.</p>
+        {% endif %}
+
+        <h4 class="fw-bold text-dark">{{ badge.name }}</h4>
+      </div>
+      {% endif %}
+
+    {% else %}
+      <div class="alert alert-danger mt-4 rounded-pill shadow-sm">
+        ❌ You didn’t reach the minimum score. Try again to improve!
+      </div>
+    {% endif %}
+
+    <!-- ✅ Boutons action -->
+    <div class="mt-5">
+        <a class="btn btn-outline-primary btn-lg px-4 me-2" href="{% url 'quiz_list' %}">
+            🔙 Back to Quizzes
+        </a>
+
+        {% if passed %}
+        <a class="btn btn-success btn-lg px-4" href="{% url 'my_badges' %}">
+            🏆 View My Badges
+        </a>
+        {% endif %}
+    </div>
+
+</div>
+
+{% endblock %}
