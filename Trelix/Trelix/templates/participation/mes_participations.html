@@ -1,0 +1,339 @@
+{% extends "trelix/base.html" %}
+{% load static %}
+{% block title %}Mes Participations - Trelix{% endblock %}
+
+{% block content %}
+{% include 'trelix/header.html' %}
+
+<!-- Promo Section Start -->
+<section class="promo-sec">
+   <div class="container">
+      <div class="row">
+         <div class="col-lg-12 text-center">
+            <h1 class="display-2 text-white">Mes Participations</h1>
+            <nav aria-label="breadcrumb mt-0">
+               <ol class="breadcrumb justify-content-center">
+                  <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+                  <li class="breadcrumb-item active" aria-current="page">Mes Participations</li>
+               </ol>
+            </nav>
+         </div>
+      </div>
+   </div>
+</section>
+<!-- Promo Section End -->
+
+<!-- Courses Section Start -->
+<section class="courses-sec sec-padding">
+   <div class="container">
+      <div class="row">
+         <div class="col-lg-4 order-2 order-lg-1">
+            <aside class="sidebar sidebar-spacing">
+               <!-- Formulaire de filtres -->
+               <form method="get" id="filter-form">
+                  <!-- Filtre par Rôle -->
+                  <div class="widget">
+                     <h3 class="widget-title">Rôle</h3>
+                     <div class="widget-inner">
+                        <ul>
+                           <li>
+                              <input id="all-roles" class="checkbox-custom" name="role" type="radio" value="" 
+                                     {% if not selected_role %}checked{% endif %}
+                                     onchange="this.form.submit()">
+                              <label for="all-roles" class="checkbox-custom-label">Tous les rôles</label>
+                              <span class="count">({{ total_participations }})</span>
+                           </li>
+                           {% for role_value, role_label in ROLE_CHOICES %}
+                           <li>
+                              <input id="role-{{ role_value }}" class="checkbox-custom" name="role" type="radio" 
+                                     value="{{ role_value }}" 
+                                     {% if selected_role == role_value %}checked{% endif %}
+                                     onchange="this.form.submit()">
+                              <label for="role-{{ role_value }}" class="checkbox-custom-label">{{ role_label }}</label>
+                              <span class="count"></span>
+                           </li>
+                           {% endfor %}
+                        </ul>
+                     </div>
+                  </div>
+
+                  <!-- Filtre par Domaine de Compétence -->
+                  <div class="widget">
+                     <h3 class="widget-title">Domaine de Compétence</h3>
+                     <div class="widget-inner">
+                        <ul>
+                           <li>
+                              <input id="all-domains" class="checkbox-custom" name="domaine" type="radio" value="" 
+                                     {% if not selected_domaine %}checked{% endif %}
+                                     onchange="this.form.submit()">
+                              <label for="all-domains" class="checkbox-custom-label">Tous les domaines</label>
+                           </li>
+                           {% for domaine_value, domaine_label in DOMAINE_COMPETENCE_CHOICES %}
+                           <li>
+                              <input id="domaine-{{ domaine_value }}" class="checkbox-custom" name="domaine" type="radio" 
+                                     value="{{ domaine_value }}" 
+                                     {% if selected_domaine == domaine_value %}checked{% endif %}
+                                     onchange="this.form.submit()">
+                              <label for="domaine-{{ domaine_value }}" class="checkbox-custom-label">{{ domaine_label }}</label>
+                           </li>
+                           {% endfor %}
+                        </ul>
+                     </div>
+                  </div>
+
+                  <!-- Filtre par Niveau d'Étude -->
+                  <div class="widget">
+                     <h3 class="widget-title">Niveau d'Étude</h3>
+                     <div class="widget-inner">
+                        <ul>
+                           <li>
+                              <input id="all-levels" class="checkbox-custom" name="niveau" type="radio" value="" 
+                                     {% if not selected_niveau %}checked{% endif %}
+                                     onchange="this.form.submit()">
+                              <label for="all-levels" class="checkbox-custom-label">Tous les niveaux</label>
+                           </li>
+                           {% for niveau_value, niveau_label in NIVEAU_ETUDE_CHOICES %}
+                           <li>
+                              <input id="niveau-{{ niveau_value }}" class="checkbox-custom" name="niveau" type="radio" 
+                                     value="{{ niveau_value }}" 
+                                     {% if selected_niveau == niveau_value %}checked{% endif %}
+                                     onchange="this.form.submit()">
+                              <label for="niveau-{{ niveau_value }}" class="checkbox-custom-label">{{ niveau_label }}</label>
+                           </li>
+                           {% endfor %}
+                        </ul>
+                     </div>
+                  </div>
+
+                  <!-- Filtre par Type d'Événement -->
+                  <div class="widget">
+                     <h3 class="widget-title">Type d'Événement</h3>
+                     <div class="widget-inner">
+                        <ul>
+                           <li>
+                              <input id="all-types" class="checkbox-custom" name="type_evenement" type="radio" value="" 
+                                     {% if not selected_type %}checked{% endif %}
+                                     onchange="this.form.submit()">
+                              <label for="all-types" class="checkbox-custom-label">Tous les types</label>
+                           </li>
+                           {% for type_value, type_label in TYPE_CHOICES %}
+                           <li>
+                              <input id="type-{{ type_value }}" class="checkbox-custom" name="type_evenement" type="radio" 
+                                     value="{{ type_value }}" 
+                                     {% if selected_type == type_value %}checked{% endif %}
+                                     onchange="this.form.submit()">
+                              <label for="type-{{ type_value }}" class="checkbox-custom-label">{{ type_label }}</label>
+                           </li>
+                           {% endfor %}
+                        </ul>
+                     </div>
+                  </div>
+
+                  <!-- Bouton de soumission caché -->
+                  <button type="submit" style="display: none;">Filtrer</button>
+               </form>
+
+          
+
+               <!-- Bouton Réinitialiser les filtres -->
+               <div class="widget">
+                  <div class="widget-inner text-center">
+                     <a href="{% url 'participation:mes_participations' %}" class="btn btn-outline-secondary btn-sm w-100">
+                        <i class="feather-icon icon-refresh-ccw me-1"></i>
+                        Réinitialiser les filtres
+                     </a>
+                  </div>
+               </div>
+            </aside>
+         </div>
+
+         <div class="col-lg-8 order-1 order-lg-2">
+            <div class="course-filters d-flex justify-content-between align-items-center">
+               <div class="result d-sm-flex align-items-center">
+                  <p class="m-0">
+                     {% if selected_role or selected_domaine or selected_niveau or selected_type %}
+                        Résultats filtrés: 
+                     {% else %}
+                        Toutes mes participations: 
+                     {% endif %}
+                     {{ participations.paginator.count }} résultat{{ participations.paginator.count|pluralize }}
+                  </p>
+               </div>
+               <div class="filter d-flex align-items-center">
+                  <select id="sort-select" name="sort" onchange="updateSort(this.value)">
+                     <option value="date_desc" {% if request.GET.sort == 'date_desc' or not request.GET.sort %}selected{% endif %}>Trier par: Plus récent</option>
+                     <option value="date_asc" {% if request.GET.sort == 'date_asc' %}selected{% endif %}>Trier par: Plus ancien</option>
+                     <option value="title_asc" {% if request.GET.sort == 'title_asc' %}selected{% endif %}>Trier par: Titre (A-Z)</option>
+                     <option value="title_desc" {% if request.GET.sort == 'title_desc' %}selected{% endif %}>Trier par: Titre (Z-A)</option>
+                  </select>
+
+                  <div class="d-none d-sm-flex ms-3">
+                     <a href="?{% for key, value in request.GET.items %}{% if key != 'view' %}{{ key }}={{ value }}&{% endif %}{% endfor %}view=grid" 
+                        class="icon border rounded-1 {% if request.GET.view != 'list' %}bg-primary text-white{% else %}bg-secondary{% endif %} me-3">
+                        <i class="feather-icon icon-grid"></i>
+                     </a>
+                     <a href="?{% for key, value in request.GET.items %}{% if key != 'view' %}{{ key }}={{ value }}&{% endif %}{% endfor %}view=list" 
+                        class="icon border rounded-1 {% if request.GET.view == 'list' %}bg-primary text-white{% else %}bg-secondary{% endif %}">
+                        <i class="feather-icon icon-list"></i>
+                     </a>
+                  </div>
+               </div>
+            </div>
+
+            <div class="course-lists row gy-4 mt-3">
+               {% if participations %}
+                  {% for participation in participations %}
+                  <div class="{% if request.GET.view == 'list' %}col-lg-12{% else %}col-xl-6 col-md-6{% endif %}">
+                     <div class="course-entry-3 card {% if request.GET.view == 'list' %}card-list{% endif %} rounded-2 bg-white border">
+                        <div class="card-media position-relative">
+                           {% if participation.evenement.image %}
+                              <a href="{% url 'evenement:detail_evenement' participation.evenement.id %}">
+                                 {% if request.GET.view == 'list' %}
+                                 <img class="card-img-top" src="{{ participation.evenement.image.url }}" 
+                                      alt="{{ participation.evenement.titre }}" 
+                                      style="height: 200px; width: 300px; object-fit: cover;">
+                                 {% else %}
+                                 <img class="card-img-top" src="{{ participation.evenement.image.url }}" 
+                                      alt="{{ participation.evenement.titre }}" 
+                                      style="height: 200px; object-fit: cover;">
+                                 {% endif %}
+                              </a>
+                           {% else %}
+                              <a href="{% url 'evenement:detail_evenement' participation.evenement.id %}">
+                                 {% if request.GET.view == 'list' %}
+                                 <div class="bg-secondary d-flex align-items-center justify-content-center" 
+                                      style="height: 200px; width: 300px;">
+                                 {% else %}
+                                 <div class="bg-secondary d-flex align-items-center justify-content-center" 
+                                      style="height: 200px;">
+                                 {% endif %}
+                                    <div class="text-center text-white">
+                                       <i class="feather-icon icon-calendar display-4"></i>
+                                       <p class="mt-2 mb-0">Aucune image</p>
+                                    </div>
+                                 </div>
+                              </a>
+                           {% endif %}
+                           
+                           {% if participation.evenement.date_fin < now %}
+                           <span class="position-absolute top-0 start-0 m-2 badge bg-secondary">Terminé</span>
+                           {% elif participation.evenement.date_debut > now %}
+                           <span class="position-absolute top-0 start-0 m-2 badge bg-success">À venir</span>
+                  
+                           {% endif %}
+                        </div>
+                        <div class="card-body">
+                           <div class="course-meta d-flex justify-content-between align-items-center mb-2">
+                              <div class="d-flex align-items-center">
+                                 <span class="badge bg-info">{{ participation.evenement.get_type_display }}</span>
+                              </div>
+                              <span><i class="feather-icon icon-calendar me-2"></i>
+                                 {{ participation.evenement.date_debut|date:"d/m/Y" }}
+                              </span>
+                           </div>
+                           <h3 class="sub-title mb-0">
+                              <a href="{% url 'evenement:detail_evenement' participation.evenement.id %}">
+                                 {{ participation.evenement.titre }}
+                              </a>
+                           </h3>
+                           
+                           <div class="author-meta small d-flex pt-2 justify-content-between align-items-center mb-3">
+                              <span>
+                                 <i class="feather-icon icon-map-pin me-1"></i>
+                                 {{ participation.evenement.lieu }}
+                              </span>
+                              <span>
+                                 <i class="feather-icon icon-users me-1"></i>
+                                 {{ participation.evenement.capacite_max }} places
+                              </span>
+                           </div>
+
+                           <div class="course-footer d-flex align-items-center justify-content-between pt-3">
+                              <div class="price">
+                                 {% if participation.evenement.prix %}
+                                    <strong>{{ participation.evenement.prix }} €</strong>
+                                 {% else %}
+                                    <strong class="text-success">Gratuit</strong>
+                                 {% endif %}
+                              </div>
+                              <div class="actions">
+                                 <a href="{% url 'evenement:detail_evenement' participation.evenement.id %}" 
+                                    class="btn btn-outline-primary btn-sm me-2">
+                                    Voir détails
+                                 </a>
+                                 {% if participation.evenement.date_debut > now %}
+                                 <form method="post" action="{% url 'participation:annuler_participation' participation.evenement.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" 
+                                            onclick="return confirm('Êtes-vous sûr de vouloir annuler votre participation à cet événement ?')">
+                                       Annuler
+                                    </button>
+                                 </form>
+                                 {% endif %}
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  {% endfor %}
+               {% else %}
+                  <div class="col-lg-12">
+                     <div class="text-center py-5">
+                        <i class="feather-icon icon-calendar display-1 text-muted"></i>
+                        <h3 class="mt-3 text-muted">Aucune participation</h3>
+                        <p class="text-muted mb-4">
+                           {% if selected_role or selected_domaine or selected_niveau or selected_type %}
+                              Aucune participation ne correspond à vos critères de filtrage.
+                           {% else %}
+                              Vous n'êtes pas encore inscrit à un événement.
+                           {% endif %}
+                        </p>
+                        <a href="{% url 'evenement:liste_evenements' %}" class="btn btn-primary">
+                           <i class="feather-icon icon-calendar me-1"></i> Voir les événements disponibles
+                        </a>
+                     </div>
+                  </div>
+               {% endif %}
+
+               <!-- Pagination -->
+               {% if participations.has_other_pages %}
+               <div class="col-lg-12">
+                  <div class="pager text-center mt-5">
+                     {% if participations.has_previous %}
+                     <a href="?page={{ participations.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="next-btn">
+                        <i class="feather-icon icon-arrow-left"></i>
+                     </a>
+                     {% endif %}
+                     
+                     {% for i in participations.paginator.page_range %}
+                        {% if participations.number == i %}
+                        <span class="current">{{ i }}</span>
+                        {% else %}
+                        <a href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
+                        {% endif %}
+                     {% endfor %}
+                     
+                     {% if participations.has_next %}
+                     <a href="?page={{ participations.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="prev-btn">
+                        <i class="feather-icon icon-arrow-right"></i>
+                     </a>
+                     {% endif %}
+                  </div>
+               </div>
+               {% endif %}
+            </div>
+         </div>
+      </div>
+   </div>
+</section>
+
+<script>
+function updateSort(sortValue) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('sort', sortValue);
+    window.location.href = url.toString();
+}
+</script>
+
+{% include 'trelix/footer.html' %}
+{% endblock %}

@@ -1,0 +1,414 @@
+{% extends "trelix/base.html" %}
+{% load static %}
+
+{% block title %}Exams{% endblock %}
+
+{% block content %}
+{% include 'trelix/header.html' %}
+<style>
+  /* Success page styling */
+  .exam-success-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  }
+
+  .success-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 700px;
+    width: 100%;
+    overflow: hidden;
+    animation: slideUp 0.6s ease-out;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .success-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 40px 30px;
+    text-align: center;
+    color: white;
+  }
+
+  .success-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 40px;
+    animation: scaleIn 0.6s ease-out 0.2s both;
+  }
+
+  @keyframes scaleIn {
+    from {
+      transform: scale(0);
+    }
+    to {
+      transform: scale(1);
+    }
+  }
+
+  .success-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    letter-spacing: -0.5px;
+  }
+
+  .success-subtitle {
+    font-size: 16px;
+    opacity: 0.95;
+    margin: 0;
+  }
+
+  .success-content {
+    padding: 40px 30px;
+  }
+
+  .score-section {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .score-label {
+    font-size: 14px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .score-display {
+    font-size: 56px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+  }
+
+  .score-status {
+    font-size: 16px;
+    color: #6b7280;
+    margin-top: 10px;
+  }
+
+  .details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+
+  .detail-item {
+    background: #f9fafb;
+    padding: 20px;
+    border-radius: 12px;
+    border-left: 4px solid #667eea;
+  }
+
+  .detail-label {
+    font-size: 12px;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .detail-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  .performance-section {
+    background: #f9fafb;
+    padding: 25px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+  }
+
+  .performance-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1f2937;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 20px;
+  }
+
+  .performance-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .performance-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .performance-label {
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 500;
+  }
+
+  .performance-bar {
+    flex: 1;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    margin: 0 15px;
+    overflow: hidden;
+  }
+
+  .performance-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    border-radius: 3px;
+    transition: width 0.6s ease-out;
+  }
+
+  .performance-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1f2937;
+    min-width: 50px;
+    text-align: right;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 30px;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+  }
+
+  .btn-secondary {
+    background: #f3f4f6;
+    color: #1f2937;
+    border: 1px solid #e5e7eb;
+  }
+
+  .btn-secondary:hover {
+    background: #e5e7eb;
+    border-color: #d1d5db;
+  }
+
+  .certificate-section {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    border-left: 4px solid #f59e0b;
+  }
+
+  .certificate-text {
+    font-size: 14px;
+    color: #92400e;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .certificate-icon {
+    font-size: 20px;
+  }
+
+  @media (max-width: 640px) {
+    .success-header {
+      padding: 30px 20px;
+    }
+
+    .success-content {
+      padding: 25px 20px;
+    }
+
+    .success-title {
+      font-size: 24px;
+    }
+
+    .score-display {
+      font-size: 42px;
+    }
+
+    .details-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .action-buttons {
+      flex-direction: column;
+    }
+
+    .btn {
+      width: 100%;
+    }
+  }
+</style>
+
+<div class="exam-success-container">
+  <div class="success-card">
+    <!-- Header Section -->
+    <div class="success-header">
+      <div class="success-icon">✓</div>
+      <h1 class="success-title">Exam Submitted Successfully!</h1>
+      <p class="success-subtitle">Your answers have been saved and evaluated</p>
+    </div>
+
+    <!-- Content Section -->
+    <div class="success-content">
+      <!-- Score Section -->
+      <div class="score-section">
+        <p class="score-label">Your Score</p>
+        <p class="score-display">{{ student_exam.score }}%</p>
+        <p class="score-status">
+          {% if student_exam.score >= 80 %}
+            Excellent Performance! 🎉
+          {% elif student_exam.score >= 60 %}
+            Good Job! Keep it up! 👍
+          {% elif student_exam.score >= 40 %}
+            You passed! Review the material for improvement. 📚
+          {% else %}
+            Keep practicing! You'll do better next time. 💪
+          {% endif %}
+        </p>
+      </div>
+
+      <!-- Details Grid -->
+      <div class="details-grid">
+        <div class="detail-item">
+          <p class="detail-label">Completion Time</p>
+          <p class="detail-value">{{ student_exam.completed_at|date:"H:i" }}</p>
+          <p style="font-size: 12px; color: #9ca3af; margin: 5px 0 0 0;">{{ student_exam.completed_at|date:"d M Y" }}</p>
+        </div>
+        <div class="detail-item">
+          <p class="detail-label">Total Questions</p>
+          <p class="detail-value">{{ total_questions }}</p>
+          <p style="font-size: 12px; color: #9ca3af; margin: 5px 0 0 0;">Attempted</p>
+        </div>
+        <div class="detail-item">
+          <p class="detail-label">Correct Answers</p>
+          <p class="detail-value">{{ correct_answers }}</p>
+          <p style="font-size: 12px; color: #9ca3af; margin: 5px 0 0 0;">Out of {{ total_questions }}</p>
+        </div>
+        <div class="detail-item">
+          <p class="detail-label">Time Taken</p>
+          <p class="detail-value">{{ time_taken }}</p>
+          <p style="font-size: 12px; color: #9ca3af; margin: 5px 0 0 0;">Minutes</p>
+        </div>
+      </div>
+
+      <!-- Performance Breakdown -->
+      <div class="performance-section">
+        <p class="performance-title">Performance Breakdown</p>
+        
+        <div class="performance-item">
+          <span class="performance-label">Correct Answers</span>
+          <div class="performance-bar">
+            <div class="performance-fill" style="width: {% widthratio correct_answers total_questions 100 %}%"></div>
+          </div>
+          <span class="performance-value">{{ correct_answers }}/{{ total_questions }}</span>
+        </div>
+
+        <div class="performance-item">
+          <span class="performance-label">Accuracy Rate</span>
+          <div class="performance-bar">
+            <div class="performance-fill" style="width: {{ student_exam.score }}%"></div>
+          </div>
+          <span class="performance-value">{{ student_exam.score }}%</span>
+        </div>
+
+        <div class="performance-item">
+          <span class="performance-label">Completion</span>
+          <div class="performance-bar">
+            <div class="performance-fill" style="width: 100%"></div>
+          </div>
+          <span class="performance-value">100%</span>
+        </div>
+      </div>
+
+      <!-- Certificate Section -->
+    {% if student_exam.score >= 50 %}
+  <div class="certificate-section">
+    <h3>🎉 Congratulations!</h3>
+    <p>You passed the exam with {{ student_exam.score|floatformat:2 }}%!</p>
+   
+    {% if certificate %}
+      <a href="{{ certificate.file_path.url }}" target="_blank">Download Certificate</a>
+    {% endif %}
+    
+  </div>
+{% else %}
+  <p style="color: red;">You did not pass this exam. Try again!</p>
+{% endif %}
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <a href="{% url 'exams' %}" class="btn btn-primary">
+          <span>← Back to Exams</span>
+        </a>
+        <a href="{% url 'home' %}" class="btn btn-secondary">
+          View Dashboard
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% include 'trelix/footer.html' %}
+{% endblock %}
+
