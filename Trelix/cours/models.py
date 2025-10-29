@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 import re
+from django.contrib.auth.models import User
 
 class Course(models.Model):
     LEVEL_CHOICES = [
@@ -37,3 +38,11 @@ class Course(models.Model):
                 raise ValidationError({'description': 'La description doit avoir au moins 10 caractères.'})
             if re.match(r'^[^A-Za-z]', self.description):
                 raise ValidationError({'description': 'La description ne peut pas commencer par un chiffre ou un symbole.'})
+class ChapterQuizScore(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    chapter = models.ForeignKey("chapitre.Chapter", on_delete=models.CASCADE)  # <- string reference
+    score = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.chapter} - {self.score}"

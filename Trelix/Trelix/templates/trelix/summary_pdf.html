@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ course.title }} - Summary</title>
+  <style>
+    /* ===== Style général ===== */
+    body {
+      font-family: "Helvetica", "Arial", sans-serif;
+      margin: 40px;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    h1, h2 {
+      color: #004085;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 40px;
+    }
+
+    h2 {
+      font-size: 20px;
+      border-bottom: 2px solid #004085;
+      padding-bottom: 5px;
+      margin-top: 30px;
+    }
+
+    p {
+      font-size: 14px;
+      margin-bottom: 15px;
+      text-align: justify;
+    }
+
+    .chapter {
+      margin-bottom: 25px;
+    }
+
+    .page-break {
+      page-break-after: always;
+    }
+
+    /* En-tête / pied de page */
+    header, footer {
+      width: 100%;
+      text-align: center;
+      position: fixed;
+      color: #555;
+      font-size: 12px;
+    }
+
+    header {
+      top: 0;
+    }
+
+    footer {
+      bottom: 0;
+    }
+
+    .content {
+      margin-top: 60px;
+      margin-bottom: 40px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  {{ course.title }} - Course Summary
+</header>
+
+<footer>
+  Page <span class="pageNumber"></span>
+</footer>
+
+<div class="content">
+  <h1>{{ course.title }}</h1>
+
+  {% for chapter in course.chapters.all %}
+    {% if chapter.description %}
+      <div class="chapter">
+        <h2>Chapter {{ forloop.counter }}: {{ chapter.title }}</h2>
+        <p>{{ chapter.description|linebreaksbr }}</p>
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>
+
+</body>
+</html>
