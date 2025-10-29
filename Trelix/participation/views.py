@@ -7,6 +7,56 @@ from .models import Participation
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .forms import ParticipationForm
 from django.db.models import Count
+from reportlab.pdfgen import canvas
+import os
+from django.conf import settings
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle
+
+
+
+
+def download_pdf(request, pk):
+    participation = get_object_or_404(Participation, id=pk, utilisateur=request.user)
+    evenement = participation.evenement
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="participation_{pk}.pdf"'
+
+    p = canvas.Canvas(response)
+
+    # ----- Image événement -----
+    if evenement.image:
+        img_path = os.path.join(settings.MEDIA_ROOT, str(evenement.image))
+        if os.path.exists(img_path):
+            p.drawImage(img_path, 350, 720, width=150, height=120, preserveAspectRatio=True)
+    # ---------------------------
+
+    # Title
+    p.setFont("Helvetica-Bold", 18)
+    p.drawString(100, 800, "Attestation de Participation")
+
+    p.setFont("Helvetica", 12)
+
+    p.drawString(100, 740, f"Événement : {evenement.titre}")
+    p.drawString(100, 720, f"Rôle : {participation.role}")
+    p.drawString(100, 700, f"Niveau d'étude : {participation.niveau_etude}")
+    p.drawString(100, 680, f"Années d'expérience : {participation.annee_experience}")
+    p.drawString(100, 660, f"Domaine de compétence : {participation.domaine_competence}")
+    p.drawString(100, 640, f"Expérience précédente : {participation.experience_precedente}")
+    p.drawString(100, 620, f"Date de participation : {participation.date_participation.strftime('%d/%m/%Y')}")
+
+    p.showPage()
+    p.save()
+    return response
+
+
+
+
 
 
 
@@ -32,7 +82,7 @@ def participer_evenement(request, evenement_id):
             participation.evenement = evenement
             participation.save()
             
-            messages.success(request, "Votre participation a été enregistrée avec succès!")
+            messages.success(request, "Your participation has been successfully registered!")
             return redirect('evenement:detail_evenement', evenement_id=evenement_id)
     else:
         form = ParticipationForm()

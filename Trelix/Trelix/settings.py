@@ -50,6 +50,7 @@ INSTALLED_APPS = [
      'quiz',
     
     'participation',
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
