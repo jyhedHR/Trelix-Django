@@ -1,4 +1,4 @@
-#!/bin/bash/evn bash
+#!/bin/bash/evn
 set -o errexit
 
 pip install -r requirements.txt
