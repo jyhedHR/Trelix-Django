@@ -16,8 +16,10 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),      
     path('course/<int:course_id>/', views.single_course_view, name='single-course'),
     path('chapters/', include('chapitre.urls')),
-
     path('evenements/', include('evenement.urls')),  
+   path("quiz/", include("quiz.urls")),
+
+
     
 
     
@@ -28,6 +30,8 @@ urlpatterns += [
     path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    
+   
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

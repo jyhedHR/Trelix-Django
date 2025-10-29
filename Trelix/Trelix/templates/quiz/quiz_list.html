@@ -1,0 +1,51 @@
+{% extends "trelix/base.html" %}
+{% load static %}
+{% block title %}Quiz - Trelix{% endblock %}
+
+{% block content %}
+{% include 'trelix/header.html' %}
+
+<section class="promo-sec">
+   <div class="container text-center">
+      <h1 class="display-2 text-white"><h2>Our Quizzes</h2>
+</h1>
+      <nav aria-label="breadcrumb">
+         <ol class="breadcrumb justify-content-center">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+            <li class="breadcrumb-item active"><h2> </h2>
+</li>
+         </ol>
+      </nav>
+   </div>
+</section>
+
+<div class="sec-padding bg-light">
+   <div class="container">
+      <div class="row g-4">
+
+         {% for quiz in quizzes %}
+         <div class="col-md-4">
+            <div class="card shadow-sm rounded-4 h-100">
+               <div class="card-body">
+                  <h3 class="h5">{{ quiz.title }}</h3>
+                  <p class="text-muted">{{ quiz.description|truncatechars:120 }}</p>
+
+                  <a href="{% url 'quiz_detail' quiz.id %}" 
+                     class="btn btn-primary rounded-5 w-100">
+                     Start Quiz →
+                  </a>
+               </div>
+            </div>
+         </div>
+         {% empty %}
+         <div class="text-center py-5">
+            <h4>No quiz available</h4>
+         </div>
+         {% endfor %}
+
+      </div>
+   </div>
+</div>
+
+{% include 'trelix/footer.html' %}
+{% endblock %}

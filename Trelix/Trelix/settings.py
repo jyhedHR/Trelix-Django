@@ -53,6 +53,8 @@ INSTALLED_APPS = [
     'chapitre',
     'evenement',
     'examan',
+     'quiz',
+    
 ]
 
 MIDDLEWARE = [
@@ -162,4 +164,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Media files (uploads)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+STABILITY_API_KEY = os.getenv("STABILITY_API_KEY")
+print("STABILITY_API_KEY:", STABILITY_API_KEY)
 
