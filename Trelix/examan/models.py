@@ -29,3 +29,14 @@ class Certificate(models.Model):
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
     date_issued = models.DateTimeField(auto_now_add=True)
     file_path = models.FileField(upload_to='certificates/') 
+
+
+# examapp/models.py
+class Answer(models.Model):
+    student_exam = models.ForeignKey(StudentExam, on_delete=models.CASCADE, related_name='answers')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    text = models.TextField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.student_exam.student.username} - {self.question.text[:20]}"

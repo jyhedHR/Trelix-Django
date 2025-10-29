@@ -1,65 +1,65 @@
-{% extends "trelix/base.html" %} 
+{% extends "trelix/base.html" %}
 {% load static %}
-{% block title %} Courses {% endblock %} 
-{% block content %} 
+{% block title %}Courses{% endblock %}
+{% block content %}
 {% include 'trelix/header.html' %}
- <!-- Promo Section Start -->
-   <section class="promo-sec" style="background: url('images/promo-bg.jpg')no-repeat center center / cover;">
-      <img src="images/promo-left.png" alt="" class="anim-img">
-      <img src="images/promo-right.png" alt="" class="anim-img anim-right">
-      <div class="container">
-         <div class="row">
-            <div class="col-lg-12 text-center">
-               <h1 class="display-2 text-white">Courses</h1>
-               <nav aria-label="breadcrumb mt-0">
-                  <ol class="breadcrumb">
-                     <li class="breadcrumb-item"><a href="index-2.html">Home</a></li>
-                     <li class="breadcrumb-item active" aria-current="page">Courses</li>
-                  </ol>
-               </nav>
-            </div>
-         </div>
-      </div>
-   </section>
-   <!-- Promo Section End -->
 
-   <!-- Courses Section Start -->
-   <section class="courses-sec sec-padding">
-      <div class="container">
-         <div class="row">
-            <div class="col-lg-4 order-2 order-lg-1">
-               <aside class="sidebar sidebar-spacing">
-                  <div class="widget">
-                     <h3 class="widget-title">Level</h3>
-                     <div class="widget-inner">
-                        <ul>
-                           <li>
-                              <input id="all-1" class="checkbox-custom" name="all-1" type="checkbox">
-                              <label for="all-1" class="checkbox-custom-label">All Level</label>
-                              <span class="count">(15)</span>
-                           </li>
-                           <li>
-                              <input id="begin" class="checkbox-custom" name="begin" type="checkbox">
-                              <label for="begin" class="checkbox-custom-label">Beginner</label>
-                              <span class="count">(02)</span>
-                           </li>
-                           <li>
-                              <input id="inter" class="checkbox-custom" name="inter" type="checkbox">
-                              <label for="inter" class="checkbox-custom-label">Intermediate</label>
-                              <span class="count">(10)</span>
-                           </li>
-                           <li>
-                              <input id="expert" class="checkbox-custom" name="expert" type="checkbox">
-                              <label for="expert" class="checkbox-custom-label">Expert</label>
-                              <span class="count">(08)</span>
-                           </li>
-                        </ul>
-                     </div>
-                  </div> <!-- Widget End -->
-               </aside>
+<!-- Promo Section Start -->
+<section class="promo-sec" style="background: url('{% static 'images/promo-bg.jpg' %}') no-repeat center center / cover;">
+  <img src="{% static 'images/promo-left.png' %}" alt="" class="anim-img">
+  <img src="{% static 'images/promo-right.png' %}" alt="" class="anim-img anim-right">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12 text-center">
+        <h1 class="display-2 text-white">Courses</h1>
+        <nav aria-label="breadcrumb mt-0">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Courses</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Promo Section End -->
+
+<!-- Courses Section Start -->
+<section class="courses-sec sec-padding">
+  <div class="container">
+    <div class="row">
+      <!-- Sidebar -->
+      <div class="col-lg-4 order-2 order-lg-1">
+        <aside class="sidebar sidebar-spacing">
+          <div class="widget">
+            <h3 class="widget-title">Filter by Level</h3>
+            <div class="widget-inner">
+              <ul>
+                <li>
+                  <input id="all" class="checkbox-custom" type="checkbox" checked>
+                  <label for="all" class="checkbox-custom-label">All Levels</label>
+                </li>
+                <li>
+                  <input id="beginner" class="checkbox-custom" type="checkbox">
+                  <label for="beginner" class="checkbox-custom-label">Beginner</label>
+                </li>
+                <li>
+                  <input id="intermediate" class="checkbox-custom" type="checkbox">
+                  <label for="intermediate" class="checkbox-custom-label">Intermediate</label>
+                </li>
+                <li>
+                  <input id="expert" class="checkbox-custom" type="checkbox">
+                  <label for="expert" class="checkbox-custom-label">Expert</label>
+                </li>
+              </ul>
             </div>
-            <div class="col-lg-8 order-1 order-lg-2">
-               <div class="course-lists row gy-4 mt-3">
+          </div>
+        </aside>
+      </div>
+
+      <!-- Courses -->
+      <div class="col-lg-8 order-1 order-lg-2">
+        <div id="courses-container" class="course-lists row gy-4 mt-3">
           {% for course in courses %}
           <div class="col-xl-6 col-md-6">
             <div class="course-entry-3 card rounded-2 bg-white border">
@@ -80,11 +80,100 @@
           </div>
           {% endfor %}
         </div>
-            </div>
-         </div>
       </div>
-   </section>
-   <!-- Courses Section End -->
+    </div>
+  </div>
+</section>
+<!-- Courses Section End -->
 
+{% include 'trelix/footer.html' %}
 
-{% include 'trelix/footer.html' %} {% endblock %}
+<!-- ================= JS AJAX FILTER (POST JSON) ================= -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const checkboxes = document.querySelectorAll(".checkbox-custom");
+  const container = document.getElementById("courses-container");
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  function fetchCourses() {
+    const selectedLevels = Array.from(checkboxes)
+      .filter(cb => cb.checked && cb.id !== "all")
+      .map(cb => cb.id);
+
+    const levels = (selectedLevels.length === 0 || document.getElementById("all").checked)
+      ? ["all"]
+      : selectedLevels;
+
+    fetch("{% url 'filter-courses' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken"),
+        "X-Requested-With": "XMLHttpRequest"
+      },
+      body: JSON.stringify({ levels })
+    })
+    .then(res => res.ok ? res.json() : Promise.reject(res))
+    .then(data => {
+      container.innerHTML = "";
+      if (data.courses.length === 0) {
+        container.innerHTML = "<p class='text-center text-muted'>No courses found.</p>";
+        return;
+      }
+
+      data.courses.forEach(course => {
+        const card = `
+          <div class="col-xl-6 col-md-6">
+            <div class="course-entry-3 card rounded-2 bg-white border">
+              <div class="card-media position-relative">
+                <a href="/courses/${course.id}/"><img class="card-img-top" src="${course.image}" alt="${course.title}"></a>
+              </div>
+              <div class="card-body">
+                <h3 class="sub-title mb-0">
+                  <a href="/courses/${course.id}/">${course.title}</a>
+                </h3>
+                <p>${course.description}</p>
+                <div class="course-footer d-flex align-items-center justify-content-between pt-3">
+                  <span class="badge bg-primary">${course.level}</span>
+                  <a href="/courses/${course.id}/">Enroll Now <i class="feather-icon icon-arrow-right"></i></a>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        container.insertAdjacentHTML("beforeend", card);
+      });
+    })
+    .catch(err => console.error("Error fetching courses:", err));
+  }
+
+  // Checkbox change handling
+  checkboxes.forEach(cb => {
+    cb.addEventListener("change", () => {
+      if (cb.id === "all") {
+        checkboxes.forEach(c => {
+          if (c.id !== "all") c.checked = false;
+        });
+      } else {
+        document.getElementById("all").checked = false;
+      }
+      fetchCourses();
+    });
+  });
+});
+</script>
+{% endblock %}

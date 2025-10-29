@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Exam, Question, StudentExam, Certificate
+from .models import Exam, Question, StudentExam, Certificate, Answer
 
 
 @admin.register(Exam)
@@ -26,7 +26,11 @@ class QuestionAdmin(admin.ModelAdmin):
         return obj.text[:60] + '...' if len(obj.text) > 60 else obj.text
     text_short.short_description = "Question"
 
-
+class AnswerInline(admin.TabularInline):
+    model = Answer
+    extra = 0  # don't show empty extra forms
+    readonly_fields = ('question', 'text')  # make answers read-only
+    can_delete = False
 @admin.register(StudentExam)
 class StudentExamAdmin(admin.ModelAdmin):
     list_display = ('student', 'exam', 'score', 'completed_at')
@@ -34,6 +38,7 @@ class StudentExamAdmin(admin.ModelAdmin):
     search_fields = ('student__username', 'exam__title')
     ordering = ('-completed_at',)
     list_per_page = 10
+    inlines = [AnswerInline]
 
 
 @admin.register(Certificate)
@@ -43,3 +48,14 @@ class CertificateAdmin(admin.ModelAdmin):
     search_fields = ('student__username', 'exam__title')
     ordering = ('-date_issued',)
     list_per_page = 10
+
+@admin.register(Answer)
+class AnswerAdmin(admin.ModelAdmin):
+    list_display = ('student_exam', 'question', 'short_text')
+    search_fields = ('student_exam__student__username', 'question__text', 'text')
+    list_filter = ('question__exam',)
+    list_per_page = 20
+
+    def short_text(self, obj):
+        return obj.text[:50] + '...' if len(obj.text) > 50 else obj.text
+    short_text.short_description = "Answer"

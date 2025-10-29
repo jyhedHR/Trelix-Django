@@ -1,0 +1,300 @@
+{% extends "trelix/base.html" %}
+{% load static %}
+
+{% block title %}Exams{% endblock %}
+
+{% block content %}
+{% include 'trelix/header.html' %}
+
+
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+
+
+  .exams-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .exams-header {
+    text-align: center;
+    color: white;
+    margin-bottom: 50px;
+  }
+
+  .exams-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+  }
+
+  .exams-header p {
+    font-size: 1.1rem;
+    opacity: 0.95;
+    font-weight: 300;
+  }
+
+  .exams-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+
+  .exam-card {
+    background: white;
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+  }
+
+  .exam-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .exam-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .exam-card h3 {
+    font-size: 1.4rem;
+    color: #1a1a1a;
+    font-weight: 600;
+    flex: 1;
+    line-height: 1.3;
+  }
+
+  .exam-badge {
+    background: #667eea;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    margin-left: 12px;
+  }
+
+  .exam-card p {
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    flex-grow: 1;
+  }
+
+  .exam-meta {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #eee;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: #555;
+  }
+
+  .meta-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #667eea;
+    font-weight: bold;
+  }
+
+  .exam-card a {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+  }
+
+  .exam-card a:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  }
+
+  .no-exams {
+    text-align: center;
+    color: white;
+    padding: 60px 20px;
+    font-size: 1.2rem;
+  }
+
+  .no-exams-icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    opacity: 0.8;
+  }
+
+  @media (max-width: 768px) {
+    .exams-header h1 {
+      font-size: 1.8rem;
+    }
+
+    .exams-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .exam-card {
+      padding: 20px;
+    }
+  }
+
+  .result-container {
+    margin-top: 15px;
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .hidden {
+    display: none;
+  }
+  .btn-certif {
+  background: linear-gradient(135deg, #4caf50, #2e7d32);
+  color: white;
+  padding: 8px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: 0.3s;
+}
+.btn-certif:hover {
+  background: linear-gradient(135deg, #66bb6a, #388e3c);
+}
+
+</style>
+
+<div class="exams-container">
+  <div class="exams-header">
+    <h1>Available Exams</h1>
+    <p>Select an exam to begin your assessment</p>
+  </div>
+
+ {% if exams_status %}
+  <div class="exams-grid">
+    {% for item in exams_status %}
+      <div class="exam-card">
+        <div class="exam-card-header">
+          <h3>{{ item.exam.title }}</h3>
+          {% if item.completed %}
+            <span class="exam-badge">Completed: {{ item.score|floatformat:2 }}%</span>
+          {% else %}
+            <span class="exam-badge">Ready</span>
+          {% endif %}
+        </div>
+
+        <p>{{ item.exam.description|truncatewords:25 }}</p>
+
+        <div class="exam-meta">
+          <div class="meta-item">
+            <div class="meta-icon">⏱</div>
+            <span>{{ item.exam.duration }} minutes</span>
+          </div>
+          <div class="meta-item">
+            <div class="meta-icon">❓</div>
+            <span>{{ item.exam.questions.count }} questions</span>
+          </div>
+        </div>
+
+       <div class="exam-actions" style="display: flex; gap: 10px; align-items: center;">
+  {% if not item.completed %}
+    <a href="{% url 'exam-detail' item.exam.id %}" class="btn-start">Start Exam</a>
+  {% else %}
+    <a class="btn-result" onclick="loadResult({{ item.student_exam_id }}, this)">
+      View Result
+    </a>
+
+    {% if item.score >= 50 and item.certificate %}
+      <a href="{{ item.certificate }}" class="btn-certif" target="_blank">
+        Download Certificate
+      </a>
+    {% endif %}
+  {% endif %}
+</div>
+
+
+        <div class="result-container" id="result-{{ item.exam.id }}"></div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="no-exams">
+    <div class="no-exams-icon">📚</div>
+    <p>No exams available at the moment.</p>
+    <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 10px;">Please check back later.</p>
+  </div>
+{% endif %}
+
+
+</div>
+
+<script>
+  async function loadResult(studentExamId, btn) {
+    const resultContainer = btn.closest('.exam-card').querySelector('.result-container');
+
+    // If already loaded, toggle visibility
+    if (resultContainer.innerHTML.trim() !== "") {
+      resultContainer.classList.toggle('hidden');
+      return;
+    }
+
+    // Show loading state
+    btn.textContent = "Loading...";
+
+    try {
+      const response = await fetch(`/exam/result/${studentExamId}/`, {
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+      });
+      const data = await response.json();
+
+      // Insert HTML result into the container
+      resultContainer.innerHTML = data.html;
+    } catch (error) {
+      resultContainer.innerHTML = "<p style='color:red;'>Error loading result.</p>";
+    }
+
+    // Reset button text
+    btn.textContent = "View Result";
+  }
+</script>
+
+
+
+{% include 'trelix/footer.html' %}
+{% endblock %}
