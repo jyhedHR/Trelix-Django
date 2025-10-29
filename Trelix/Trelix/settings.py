@@ -197,6 +197,10 @@ JAZZMIN_SETTINGS["site_logo"] = "images/trelix_blanc.png"
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# NLP Cloud
+NLP_CLOUD_API_KEY = os.getenv('NLP_CLOUD_API_KEY')
+NLP_CLOUD_MODEL = os.getenv('NLP_CLOUD_MODEL')
+
 # HUGGINGFACE API TOKEN
 HF_API_TOKEN=os.getenv('HF_API_TOKEN')
 # -------------------------------------------------------------

@@ -5,6 +5,12 @@ from django.http import JsonResponse
 from huggingface_hub import InferenceClient
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+import requests
+import json
+from xhtml2pdf import pisa
+from django.template.loader import render_to_string
+from django.http import HttpResponse
 
 import json
 
@@ -92,3 +98,80 @@ def submit_quiz_score(request):
         ChapterQuizScore.objects.create(user=request.user, chapter=chapter, score=score)
         return JsonResponse({"status": "ok"})
     return JsonResponse({"status": "error"}, status=400)
+def chunk_text(text, max_chars=2000):
+    """
+    Divise le texte en chunks < max_chars pour éviter de dépasser la limite API.
+    """
+    chunks = []
+    while len(text) > max_chars:
+        split_at = text.rfind("\n\n", 0, max_chars)
+        if split_at == -1:
+            split_at = max_chars
+        chunks.append(text[:split_at].strip())
+        text = text[split_at:].strip()
+    if text:
+        chunks.append(text)
+    return chunks
+
+@csrf_exempt
+def summarize_course(request, course_id):
+    try:
+        course = Course.objects.get(id=course_id)
+        chapters = Chapter.objects.filter(course=course).order_by('id')
+
+        full_text = "\n\n".join([chapter.description for chapter in chapters if chapter.description])
+        if not full_text:
+            return JsonResponse({"error": "No chapter descriptions to summarize."}, status=400)
+
+        url = f"https://api.nlpcloud.io/v1/{settings.NLP_CLOUD_MODEL}/summarization"
+        headers = {
+            "Authorization": f"Token {settings.NLP_CLOUD_API_KEY}",
+            "Content-Type": "application/json"
+        }
+
+        # Découper le texte en chunks pour éviter le 413
+        chunks = chunk_text(full_text, max_chars=2000)
+        summaries = []
+
+        for i, chunk in enumerate(chunks, start=1):
+            payload = {"text": chunk, "min_length": 50, "max_length": 300}
+            response = requests.post(url, headers=headers, data=json.dumps(payload))
+
+            # Debug pour voir les réponses
+            print(f"Chunk {i}/{len(chunks)} - Status:", response.status_code)
+            print("Response text:", response.text)
+
+            if response.status_code == 200:
+                try:
+                    data = response.json()
+                    summaries.append(data.get("summary_text", ""))
+                except json.JSONDecodeError:
+                    summaries.append("[Error decoding chunk summary]")
+            else:
+                summaries.append(f"[Error: API returned status {response.status_code}]")
+
+        final_summary = "\n\n".join([s for s in summaries if s])
+        return JsonResponse({"summary": final_summary})
+
+    except Course.DoesNotExist:
+        return JsonResponse({"error": "Course not found."}, status=404)
+    except Exception as e:
+        print("Exception in summarize_course:", e)
+        return JsonResponse({"error": str(e)}, status=500)
+@login_required
+def download_summary_pdf(request, course_id):
+    course = Course.objects.get(id=course_id)
+    chapters = Chapter.objects.filter(course=course).order_by('id')
+    full_text = "\n\n".join([c.description for c in chapters if c.description])
+
+    html_string = render_to_string('Trelix/summary_pdf.html', {
+        'course': course,
+        'summary': full_text.replace("\n", "<br>")
+    })
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="course_{course.id}_summary.pdf"'
+    pisa_status = pisa.CreatePDF(html_string, dest=response)
+    if pisa_status.err:
+        return HttpResponse("Error generating PDF", status=500)
+    return response
