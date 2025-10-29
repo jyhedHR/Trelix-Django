@@ -12,6 +12,7 @@ from xhtml2pdf import pisa
 from django.template.loader import render_to_string
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST
+from .utils import GeminiFlashcardGenerator, get_course_content_for_flashcards
 
 
 def course_list(request):
@@ -202,3 +203,54 @@ def download_summary_pdf(request, course_id):
     if pisa_status.err:
         return HttpResponse("Error generating PDF", status=500)
     return response
+
+
+@login_required
+@csrf_exempt
+def generate_flashcards(request, course_id):
+    try:
+        # Get course and validate access
+        course = get_object_or_404(Course, pk=course_id, is_published=True)
+        
+        # Get parameters from request (optional, default 10 cards)
+        num_cards = 10
+        model_name = None
+        if request.method == 'POST':
+            try:
+                body = json.loads(request.body)
+                num_cards = int(body.get('num_cards', 10))
+                # Limit to reasonable range
+                num_cards = max(5, min(num_cards, 50))
+                model_name = body.get('model_name')
+            except (json.JSONDecodeError, ValueError, TypeError):
+                pass  # Use defaults
+        
+        # Get and structure course content
+        course_content = get_course_content_for_flashcards(course)
+        
+        if not course_content or len(course_content.strip()) < 50:
+            return JsonResponse({
+                "error": "Course content is too short to generate meaningful flashcards. Please ensure the course has chapters with descriptions."
+            }, status=400)
+        
+        # Initialize flashcard generator
+        generator = GeminiFlashcardGenerator(model_name=model_name)
+        
+        # Generate flashcards
+        flashcards = generator.generate_flashcards(course_content, num_cards=num_cards)
+        
+        return JsonResponse({
+            "flashcards": flashcards,
+            "course_title": course.title,
+            "count": len(flashcards)
+        })
+        
+    except ValueError as e:
+        return JsonResponse({"error": str(e)}, status=400)
+    except Exception as e:
+        import traceback
+        print(f"Error generating flashcards: {str(e)}")
+        print(traceback.format_exc())
+        return JsonResponse({
+            "error": f"Failed to generate flashcards: {str(e)}"
+        }, status=500)

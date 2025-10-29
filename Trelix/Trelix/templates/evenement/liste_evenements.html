@@ -9,7 +9,7 @@
    <div class="container">
       <div class="row">
          <div class="col-lg-12 text-center">
-            <h1 class="display-2 text-white">Nos Événements</h1>
+            <h1 class="display-2 text-white">Our Events</h1>
             <nav aria-label="breadcrumb mt-0">
                <ol class="breadcrumb justify-content-center">
                   <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
@@ -47,10 +47,10 @@
 
                   <div class="event-footer d-flex justify-content-between align-items-center">
                      <span class="small text-primary">
-                        <i class="feather-icon icon-users me-1"></i>{{ evenement.capacite_max }} Participants
+                        <i class="feather-icon icon-users me-1"></i>Max. {{ evenement.capacite_max }} Participants
                      </span>
       <a href="{% url 'evenement:detail_evenement' evenement.id %}" class="btn btn-outline-primary rounded-5">
-    Voir Détails <i class="feather-icon icon-arrow-right"></i>
+    view details <i class="feather-icon icon-arrow-right"></i>
 </a>
 
                   </div>

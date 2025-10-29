@@ -1,6 +1,6 @@
 {% extends "trelix/base.html" %}
 {% load static %}
-{% block title %}Participer - {{ evenement.titre }}{% endblock %}
+{% block title %}Participate - {{ evenement.titre }}{% endblock %}
 
 {% block content %}
 {% include 'trelix/header.html' %}
@@ -12,7 +12,7 @@
                 <div class="card-header bg-primary text-white py-4">
                     <h2 class="h4 mb-0 text-center">
                         <i class="feather-icon icon-user-plus me-2"></i>
-                        Participer à l'événement
+                        Participate in the event
                     </h2>
                 </div>
                 <div class="card-body p-5">
@@ -41,7 +41,7 @@
                             <div class="form-check">
                                 {{ field }}
                                 <label class="form-check-label" for="{{ field.id_for_label }}">
-                                    J'ai déjà participé à des événements similaires
+                                    I have already participated in similar events
                                 </label>
                             </div>
                             {% else %}
@@ -62,11 +62,11 @@
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
                             <a href="{% url 'evenement:detail_evenement' evenement.id %}" 
                                class="btn btn-outline-secondary me-md-2">
-                                Annuler
+                                Cancel
                             </a>
                             <button type="submit" class="btn btn-primary">
                                 <i class="feather-icon icon-check me-1"></i>
-                                Confirmer la participation
+                                Confirm participation
                             </button>
                         </div>
                     </form>

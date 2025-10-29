@@ -15,7 +15,7 @@
       <div class="col-xl-7 col-md-7">
         <div class="login-form">
           <h1 class="display-3 text-center mb-5">Let’s Sign In Eduxo</h1>
-          <form method="post" action="{% url 'signin' %}">
+          <form method="post" action="{% url 'accounts:signin' %}">
             {% csrf_token %}
             {{ form.non_field_errors }}
 
@@ -52,7 +52,7 @@
 
               <p>
                 Don't have an account?
-                <a href="{% url 'signup' %}" class="text-primary fw-bold">Sign Up Now</a>
+                <a href="{% url 'accounts:signup' %}" class="text-primary fw-bold">Sign Up Now</a>
               </p>
             </div>
           </form>

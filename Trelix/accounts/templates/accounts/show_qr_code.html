@@ -1,0 +1,263 @@
+{% extends "trelix/base.html" %}
+{% load static %}
+
+{% block title %} Two-Step Verification Setup {% endblock %}
+
+{% block content %}
+<section class="signup-sec full-screen">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-xl-5 col-md-5">
+        <div class="signup-thumb">
+          <img class="img-fluid" src="{% static 'images/shape-bg.png' %}" alt="Scan QR Code" />
+        </div>
+      </div>
+      <div class="col-xl-7 col-md-7">
+        <div class="login-form">
+          <h1 class="display-3 text-center mb-4">Setup Two-Step Verification</h1>
+          
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          <!-- Step Indicator -->
+          <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="step-indicator {% if current_step == 1 or not current_step %}active{% endif %}">
+                <span class="step-number">1</span>
+                <span class="step-label">Scan QR Code</span>
+              </div>
+              <div class="step-connector {% if current_step == 2 or current_step == 3 %}active{% endif %}"></div>
+              <div class="step-indicator {% if current_step == 2 %}active{% endif %}">
+                <span class="step-number">2</span>
+                <span class="step-label">Verify Code</span>
+              </div>
+              <div class="step-connector {% if current_step == 3 %}active{% endif %}"></div>
+              <div class="step-indicator {% if current_step == 3 %}active{% endif %}">
+                <span class="step-number">3</span>
+                <span class="step-label">Backup Codes</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Step 1: Scan QR Code -->
+          <div id="step1" class="setup-step {% if current_step == 2 or current_step == 3 %}d-none{% endif %} {% if not qr_code_data %}d-none{% endif %}">
+            <p class="text-center text-muted mb-4">
+              <strong>Step 1:</strong> Open your authenticator app and scan this QR code:
+            </p>
+
+            {% if qr_code_data %}
+            <div class="text-center mb-4">
+              <img src="{{ qr_code_data }}" alt="QR Code" class="img-fluid border rounded p-3 bg-white shadow-sm" style="max-width: 280px;">
+            </div>
+            {% endif %}
+
+            <div class="alert alert-info mb-4">
+              <strong>Tip:</strong> After scanning, your authenticator app will display a 6-digit code that changes every 30 seconds.
+            </div>
+
+            <div class="text-center">
+              <button type="button" class="btn btn-primary" onclick="showStep2()">
+                Next: Verify Code <i class="feather-icon icon-arrow-right ms-2"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 2: Verify Code -->
+          <div id="step2" class="setup-step {% if current_step != 2 %}d-none{% endif %}">
+            <p class="mb-3">
+              <strong>Step 2:</strong> Enter the 6-digit code from your authenticator app to verify setup:
+            </p>
+            <form method="post" action="{% url 'accounts:show_qr_code' %}">
+              {% csrf_token %}
+              <div class="form-group position-relative mb-3">
+                <span><i class="feather-icon icon-lock"></i></span>
+                <input type="text" name="token" class="form-control" 
+                       placeholder="000000" maxlength="6" required autofocus id="tokenInput">
+                <small class="form-text text-muted">Enter the 6-digit code from your app</small>
+              </div>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-secondary" onclick="showStep1()">
+                  <i class="feather-icon icon-arrow-left me-2"></i> Back
+                </button>
+                <button type="submit" class="btn btn-success flex-grow-1">
+                  Verify & Enable 2FA
+                </button>
+              </div>
+              <div class="text-center mt-3">
+                <a href="{% url 'accounts:profile' %}" class="text-muted small">
+                  Skip verification (not recommended)
+                </a>
+              </div>
+            </form>
+          </div>
+
+          <!-- Step 3: Backup Codes (Skippable) -->
+          <div id="step3" class="setup-step {% if current_step != 3 %}d-none{% endif %}">
+            <div class="alert alert-success mb-4">
+              <strong>Success!</strong> Two-step verification has been enabled successfully.
+            </div>
+            
+            <h5 class="mb-3">Your Backup Codes</h5>
+            <div class="alert alert-warning mb-3">
+              <small>
+                <strong>Important:</strong> Save these codes in a safe place. Each code can only be used once. 
+                These codes will not be shown again after you leave this page.
+              </small>
+            </div>
+            <div class="row g-2 mb-3">
+              {% for code in backup_codes %}
+                <div class="col-6">
+                  <div class="border rounded p-2 text-center font-monospace bg-light">
+                    <strong>{{ code }}</strong>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+            
+            <div class="d-flex gap-2 mb-3">
+              <a href="{% url 'accounts:download_backup_codes' %}" class="btn btn-outline-primary flex-grow-1">
+                <i class="feather-icon icon-download me-2"></i> Download Backup Codes
+              </a>
+              <button type="button" class="btn btn-outline-secondary" onclick="skipBackupCodes()">
+                Skip
+              </button>
+            </div>
+
+            <div class="text-center">
+              <a href="{% url 'accounts:profile' %}?section=security" class="btn btn-primary">
+                <i class="feather-icon icon-check me-2"></i> Complete Setup
+              </a>
+            </div>
+          </div>
+
+          <div class="text-center mt-4">
+            <a href="{% url 'accounts:profile' %}" class="text-muted">
+              <i class="feather-icon icon-arrow-left"></i> Back to Profile
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .setup-step {
+    min-height: 300px;
+  }
+  
+  .step-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    position: relative;
+  }
+  
+  .step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-bottom: 8px;
+    transition: all 0.3s;
+  }
+  
+  .step-indicator.active .step-number {
+    background-color: #0d6efd;
+    color: white;
+  }
+  
+  .step-label {
+    font-size: 0.85rem;
+    color: #6c757d;
+    text-align: center;
+  }
+  
+  .step-indicator.active .step-label {
+    color: #0d6efd;
+    font-weight: 600;
+  }
+  
+  .step-connector {
+    flex: 1;
+    height: 2px;
+    background-color: #e9ecef;
+    margin: 0 10px;
+    margin-top: -25px;
+    transition: all 0.3s;
+  }
+  
+  .step-connector.active {
+    background-color: #0d6efd;
+  }
+</style>
+
+<script>
+  function showStep2() {
+    document.getElementById('step1').classList.add('d-none');
+    document.getElementById('step2').classList.remove('d-none');
+    updateStepIndicator(2);
+    // Focus on token input after a small delay
+    setTimeout(() => {
+      const tokenInput = document.getElementById('tokenInput');
+      if (tokenInput) tokenInput.focus();
+    }, 100);
+  }
+  
+  function showStep1() {
+    document.getElementById('step2').classList.add('d-none');
+    document.getElementById('step1').classList.remove('d-none');
+    updateStepIndicator(1);
+  }
+  
+  function skipBackupCodes() {
+    window.location.href = '{% url "accounts:profile" %}?section=security';
+  }
+  
+  function updateStepIndicator(step) {
+    // Remove active class from all steps
+    document.querySelectorAll('.step-indicator').forEach(el => {
+      el.classList.remove('active');
+    });
+    document.querySelectorAll('.step-connector').forEach(el => {
+      el.classList.remove('active');
+    });
+    
+    // Activate current step
+    const indicators = document.querySelectorAll('.step-indicator');
+    if (indicators[step - 1]) {
+      indicators[step - 1].classList.add('active');
+    }
+    
+    // Activate connectors up to current step
+    const connectors = document.querySelectorAll('.step-connector');
+    for (let i = 0; i < step - 1; i++) {
+      if (connectors[i]) {
+        connectors[i].classList.add('active');
+      }
+    }
+  }
+
+  // Initialize step indicator on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    {% if current_step %}
+      updateStepIndicator({{ current_step }});
+    {% else %}
+      updateStepIndicator(1);
+    {% endif %}
+  });
+</script>
+
+{% endblock %}

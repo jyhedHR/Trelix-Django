@@ -132,7 +132,11 @@
              aria-controls="collapseAdminMenu"><i class="feather-icon icon-user"></i></a>
           <div class="admin-menu pt-3 bg-white collapse" id="collapseAdminMenu">
             <div class="d-flex avatar border-bottom pb-3">
-              <img class="img-fluid border rounded-circle" src="{% static 'images/ava-sm1.jpg' %}" width="50" alt="avatar" />
+              {% if user_profile_context and user_profile_context.profile_picture %}
+                <img class="img-fluid border rounded-circle" src="{{ user_profile_context.profile_picture.url }}" width="50" alt="avatar" />
+              {% else %}
+                <img class="img-fluid border rounded-circle" src="{% static 'images/ava-sm1.jpg' %}" width="50" alt="avatar" />
+              {% endif %}
               <div class="grettings ps-3">
                 {% if request.user.is_authenticated %}
                   <h6 class="mb-0">{{ request.user.get_full_name|default:request.user.username }}</h6>
@@ -146,7 +150,7 @@
               <ul class="list-unstyled nav">
                 {% if request.user.is_authenticated %}
                   <li>
-                    <a class="nav-link" href="{% url 'profile' %}">
+                    <a class="nav-link" href="{% url 'accounts:profile' %}">
                       <i class="feather-icon icon-user"></i><span>My Profile</span>
                     </a>
                   </li>
@@ -156,19 +160,19 @@
                     </a>
                   </li>
                   <li>
-                    <a class="nav-link" href="{% url 'signout' %}">
+                    <a class="nav-link" href="{% url 'accounts:signout' %}">
                       <i class="feather-icon icon-log-out"></i><span>Logout</span>
                     </a>
                   </li>
                 
                 {% else %}
                   <li>
-                    <a class="nav-link" href="{% url 'signin' %}">
+                    <a class="nav-link" href="{% url 'accounts:signin' %}">
                       <i class="feather-icon icon-log-in"></i><span>Sign In</span>
                     </a>
                   </li>
                   <li>
-                    <a class="nav-link" href="{% url 'signup' %}">
+                    <a class="nav-link" href="{% url 'accounts:signup' %}">
                       <i class="feather-icon icon-user-plus"></i><span>Sign Up</span>
                     </a>
                   </li>
@@ -198,10 +202,10 @@
 </li>
 
               {% if request.user.is_authenticated %}
-                <li class="nav-item"><a class="nav-link" href="{% url 'profile' %}">Profile</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'accounts:profile' %}">Profile</a></li>
               {% else %}
-                <li class="nav-item"><a class="nav-link" href="{% url 'signin' %}">Sign In</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'signup' %}">Sign Up</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'accounts:signin' %}">Sign In</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'accounts:signup' %}">Sign Up</a></li>
               {% endif %}
             </ul>
             <a class="navbar-brand d-none d-xl-block m-0" href="{% url 'home' %}">

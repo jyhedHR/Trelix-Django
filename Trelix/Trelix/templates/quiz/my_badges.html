@@ -1,14 +1,13 @@
 {% extends "trelix/base.html" %}
-{% load static %}
 {% block title %}My Badges{% endblock %}
-{% load static %}
+
 {% block content %}
 <style>
     .badge-card {
         background: #ffffff;
         border-radius: 15px;
         transition: 0.3s ease-in-out;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.09);
         padding: 20px;
         border: 2px solid transparent;
     }
@@ -16,31 +15,34 @@
     .badge-card:hover {
         transform: translateY(-8px);
         border-color: #ffc107;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.18);
     }
 
-    .badge-img {
-        animation: bounce 1.5s infinite alternate;
-    }
-
-    @keyframes bounce {
-        from { transform: translateY(0); }
-        to { transform: translateY(-6px); }
-    }
-
-    .badge-placeholder {
-        width: 90px;
-        height: 90px;
+    .badge-frame {
+        width: 110px;
+        height: 110px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #ececec, #c9c9c9);
-        margin: 0 auto;
+        margin: 0 auto 10px;
+        background: radial-gradient(circle, #fff 30%, #d4af37 95%);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 0.65rem;
-        font-weight: 700;
-        color: #555;
-        border: 2px dashed #aaa;
+        padding: 5px;
+        box-shadow: 0px 0px 10px rgba(255, 193, 7, 0.5);
+        border: 3px solid #f8d24a;
+    }
+
+    .badge-img {
+        width: 85px;
+        height: 85px;
+        border-radius: 50%;
+        object-fit: cover;
+        animation: bounce 2s infinite alternate ease-in-out;
+    }
+
+    @keyframes bounce {
+        0% { transform: translateY(3px); }
+        100% { transform: translateY(-6px); }
     }
 
     .title-badges {
@@ -48,27 +50,42 @@
         font-size: 2rem;
         color: #0d6efd;
     }
+
+    .locked {
+        width: 85px;
+        height: 85px;
+        border-radius: 50%;
+        background: #bebebe;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.8rem;
+        color: #555;
+    }
 </style>
 
 <div class="container mt-5">
     <h2 class="text-center title-badges">🎖️ My Badges</h2>
-    <p class="text-center text-muted mb-4">
-        Continue your journey and unlock new badges! Congratulations ✨
-    </p>
+    <p class="text-center text-muted">Keep going and unlock more rewards! ✨</p>
 
     {% if badges %}
     <div class="row justify-content-center">
         {% for ub in badges %}
         <div class="col-md-3 col-sm-6 mb-4">
             <div class="badge-card text-center">
-                {% if ub.badge.icon %}
-                     <img src="{{ ub.badge.icon.url }}" width="90" class="badge-img mb-2" alt="Badge">
-                {% else %}
-                    <div class="badge-placeholder mb-2">No Image</div>
-                {% endif %}
+
+                <div class="badge-frame">
+                    {% if ub.badge.icon %}
+                        <img src="{{ ub.badge.icon.url }}" class="badge-img" alt="Badge">
+                    {% else %}
+                        <div class="locked">🔒</div>
+                    {% endif %}
+                </div>
+
                 <h5 class="fw-bold">{{ ub.badge.name }}</h5>
-                <p class="text-muted small m-0">Quiz : {{ ub.quiz.title }}</p>
-                <span class="badge bg-success mt-2">Score : {{ ub.score }}%</span>
+                <p class="text-muted small">Quiz: {{ ub.quiz.title }}</p>
+                <span class="badge bg-success">Score : {{ ub.score }}%</span>
+
             </div>
         </div>
         {% endfor %}
@@ -76,10 +93,9 @@
     {% else %}
     <div class="text-center mt-5">
         <p class="text-muted fs-5">No badges earned yet 😢</p>
-        <a href="{% url 'quiz_list' %}" class="btn btn-primary mt-3">
-            🎯 Take a Quiz
-        </a>
+        <a href="{% url 'quiz_list' %}" class="btn btn-primary mt-3">🎯 Take a Quiz</a>
     </div>
     {% endif %}
 </div>
+
 {% endblock %}
