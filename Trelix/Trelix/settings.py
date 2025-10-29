@@ -59,8 +59,20 @@ INSTALLED_APPS = [
     'participation',
     'widget_tweaks',
     'accounts',
+    'cloudinary',
+    'cloudinary_storage'
 ]
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dejmvcyfl',
+    'API_KEY': '877561497749136',
+    'API_SECRET': 'Sesr-gb8Cjsrg7l70Czt7jd3zt8'
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',

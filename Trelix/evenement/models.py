@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 import re
+from cloudinary.models import CloudinaryField
 
 def validate_letters_only(value):
     """Valide que le champ ne contient que des lettres, espaces et certains caractères de ponctuation"""
@@ -32,9 +33,14 @@ class Evenement(models.Model):
     date_debut = models.DateTimeField(default=timezone.now)
     date_fin = models.DateTimeField()
     lieu = models.CharField(max_length=100)
-    image = models.ImageField(upload_to='images/', blank=True, null=True)
+    image = CloudinaryField('image', blank=True, null=True)
 
     capacite_max = models.PositiveIntegerField()
+
+    def __str__(self):
+        return self.titre
+
+  
 
     def clean(self):
         """Validation supplémentaire pour la longueur minimale"""
