@@ -1,0 +1,753 @@
+{% extends "trelix/base.html" %} 
+{% load static %}
+{% block title %} Profile {% endblock %} 
+{% block content %} 
+{% include 'trelix/header.html' %}
+<div class="dashbaord-cover bg-shade sec-padding">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12 position-relative">
+        {% if user_profile and user_profile.profile_picture %}
+        <div class="dash-cover-bg rounded-3" style="background-size: cover; background-position: center; background-color: white;"></div>
+        {% else %}
+        <div class="dash-cover-bg rounded-3"></div>
+        {% endif %}
+        <div
+          class="dash-cover-info d-sm-flex justify-content-between align-items-center"
+        >
+          <div class="ava-wrap d-flex align-items-center">
+            <div class="avatar me-3 rounded-circle">
+              {% if user_profile and user_profile.profile_picture %}
+              <img
+                width="150"
+                height="150"
+                src="{{ user_profile.profile_picture.url }}"
+                class="rounded-circle"
+                alt="{{ request.user.get_full_name|default:request.user.username }}"
+                style="object-fit: cover;"
+              />
+              {% else %}
+              <img
+                width="150"
+                height="150"
+                src="{% static 'images/avatar.png' %}"
+                class="rounded-circle"
+                alt="{{ request.user.get_full_name|default:request.user.username }}"
+                style="object-fit: cover;"
+              />
+              {% endif %}
+            </div>
+            <div class="ava-info">
+              <h4 class="display-5 mb-0" style="color: #212529; font-weight: 600;">
+                {{ request.user.get_full_name|default:request.user.username }}
+              </h4>
+              <div class="ava-meta mt-1">
+                {% if user_profile %}
+                <span style="color: #6c757d; display: inline-flex; align-items: center; gap: 6px; font-size: 0.95rem;">
+                  <i class="feather-icon icon-user" style="color: #0d6efd;"></i>
+                  <span style="font-weight: 500;">{{ user_profile.get_user_type_display }}</span>
+                </span>
+                {% else %}
+                <span style="color: #6c757d; display: inline-flex; align-items: center; gap: 6px; font-size: 0.95rem;">
+                  <i class="feather-icon icon-user" style="color: #0d6efd;"></i>
+                  <span style="font-weight: 500;">User</span>
+                </span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% if user_profile and user_profile.user_type == 'instructor' %}
+          <a href="{% url 'courses' %}" class="btn btn-sm btn-info rounded-5">
+            <i class="feather-icon icon-plus me-2"></i>Add New Course
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <!-- Dashboard Inner Start -->
+    <div class="row mt-5">
+      <div class="col-lg-3">
+        <aside class="dashboard-sidebar shadow-1 border rounded-3">
+          <div class="widget">
+            <p class="grettings">
+              Welcome, {{ request.user.get_short_name|default:request.user.username }}
+            </p>
+            <nav class="dashboard-nav">
+              <ul class="list-unstyled nav">
+                <li>
+                  <a class="nav-link {% if active_section == 'profile' %}active{% endif %}" href="#" data-section="profile">
+                    <i class="feather-icon icon-user"></i>
+                    <span>Profile Information</span>
+                  </a>
+                </li>
+                <li>
+                  <a class="nav-link {% if active_section == 'security' %}active{% endif %}" href="#" data-section="security">
+                    <i class="feather-icon icon-shield"></i>
+                    <span>Account Security</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </aside>
+      </div>
+      <div class="col-lg-9 ps-lg-4">
+        <section class="dashboard-sec">
+          <h2 class="display-5 pb-3 mb-4" id="section-title">
+            {% if active_section == 'profile' %}Profile Information{% elif active_section == 'security' %}Account Security{% endif %}
+          </h2>
+          
+          {% csrf_token %}
+          
+          <!-- Data attributes for JavaScript -->
+          <div id="profile-data" 
+               data-has-password="{% if has_password %}true{% else %}false{% endif %}"
+               data-profile-url="{% url 'accounts:profile' %}"
+               data-toggle-2fa-url="{% url 'accounts:toggle_2fa' %}"
+               data-backup-codes-url="{% url 'accounts:get_backup_codes' %}"
+               data-set-password-url="{% url 'accounts:set_password' %}"
+               style="display: none;"></div>
+          
+          <!-- Profile Information Tab -->
+          <div id="profile-section" class="tab-section {% if active_section == 'profile' %}active{% endif %}">
+            <div class="profile-info border rounded-3 mb-4">
+              <ul>
+                <li><span>User Name</span>{{ request.user.username }}</li>
+                <li><span>Email</span><a href="mailto:{{ request.user.email }}">{{ request.user.email }}</a></li>
+                <li><span>First Name</span>{{ request.user.first_name }}</li>
+                <li><span>Last Name</span>{{ request.user.last_name }}</li>
+                {% if user_profile %}
+                <li><span>Phone Number</span>{{ user_profile.phone_number|default:"Not provided" }}</li>
+                <li><span>Registration Date</span>{{ user_profile.created_at|date:"F d, Y H:i a" }}</li>
+                <li><span>User Type</span>{{ user_profile.get_user_type_display }}</li>
+                {% endif %}
+              </ul>
+            </div>
+          </div>
+          
+          <!-- Account Security Tab -->
+          <div id="security-section" class="tab-section {% if active_section == 'security' %}active{% endif %}">
+            {% if user_profile %}
+            <!-- Password Section -->
+            <div class="border rounded-3 p-4 mb-4">
+              <h3 class="mb-4">Password</h3>
+              <p class="text-muted mb-3">
+                {% if has_password %}
+                  Click the button below to change your password.
+                {% else %}
+                  <span class="badge bg-warning text-dark">You don't have a password set yet</span><br>
+                  Set a password to enable additional security features and login without Google.
+                {% endif %}
+              </p>
+              <button type="button" class="btn {% if has_password %}btn-primary{% else %}btn-success{% endif %}" onclick="showChangePasswordModal()">
+                {% if has_password %}Change Password{% else %}Set Password{% endif %}
+              </button>
+            </div>
+            
+            <!-- Two-Step Verification -->
+            <div class="border rounded-3 p-4 mb-4">
+              <h3 class="mb-4">Two-Step Verification</h3>
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                  <h5 class="mb-1">Status</h5>
+                  <p class="text-muted small mb-0">
+                    {% if user_profile.two_step_verification %}
+                      <span class="badge bg-success">Enabled</span>
+                    {% else %}
+                      <span class="badge bg-secondary">Disabled</span>
+                    {% endif %}
+                  </p>
+                </div>
+                <button 
+                  type="button" 
+                  class="btn btn-outline-secondary"
+                  onclick="toggle2FA()">
+                  {% if user_profile.two_step_verification %}Disable{% else %}Enable{% endif %}
+                </button>
+              </div>
+              
+              <!-- Backup Codes (only show if 2FA is enabled) -->
+              {% if user_profile.two_step_verification %}
+              <div class="backup-codes-section mt-4 pt-4 border-top">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div>
+                    <h5 class="mb-1">Backup Codes</h5>
+                    <p class="text-muted small mb-0">Use these codes if you lose access to your authentication device</p>
+                  </div>
+                  <div class="btn-group">
+                    {% if has_backup_codes %}
+                    <button type="button" class="btn btn-outline-primary" onclick="showBackupCodes()">
+                      Show Backup Codes
+                    </button>
+                    {% endif %}
+                    <button type="button" class="btn btn-outline-warning" onclick="resetBackupCodes()">
+                      Reset Backup Codes
+                    </button>
+                  </div>
+                </div>
+                {% if has_backup_codes %}
+                <div id="backup-codes-container" class="d-none mt-3">
+                  <div class="row g-2" id="backup-codes-grid">
+                    <!-- Backup codes will be inserted here -->
+                  </div>
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                  <small><strong>No backup codes available.</strong> Generate new codes using the "Reset Backup Codes" button above.</small>
+                </div>
+                {% endif %}
+              </div>
+              
+              <!-- Trusted Devices (only show if 2FA is enabled) -->
+              <div class="trusted-devices-section mt-4 pt-4 border-top">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div>
+                    <h5 class="mb-1">Trusted Devices</h5>
+                    <p class="text-muted small mb-0">Devices that can sign in without 2FA verification. Remove devices you no longer recognize.</p>
+                  </div>
+                </div>
+                <div id="trusted-devices-container">
+                  <div class="list-group">
+                    {% if request.user.trusted_devices.all %}
+                      {% for device in request.user.trusted_devices.all %}
+                      <div class="list-group-item d-flex justify-content-between align-items-center" id="device-{{ device.id }}">
+                        <div class="flex-grow-1">
+                          <div class="d-flex align-items-center mb-1">
+                            <i class="feather-icon icon-smartphone me-2 text-primary"></i>
+                            <div class="fw-bold">{{ device.user_agent|default:"Unknown Device"|truncatewords:10 }}</div>
+                          </div>
+                          <small class="text-muted d-block">
+                            <i class="feather-icon icon-calendar me-1"></i>Added: {{ device.created_at|date:"M d, Y" }} | 
+                            <i class="feather-icon icon-clock me-1"></i>Last used: {{ device.last_used|date:"M d, Y H:i" }}
+                          </small>
+                        </div>
+                        <button 
+                          type="button" 
+                          class="btn btn-sm btn-outline-danger ms-3" 
+                          data-device-id="{{ device.id }}"
+                          onclick="deleteTrustedDevice(this.dataset.deviceId)"
+                          title="Remove this trusted device">
+                          <i class="feather-icon icon-trash-2"></i> Remove
+                        </button>
+                      </div>
+                      {% endfor %}
+                    {% else %}
+                      <div class="alert alert-info">
+                        <small>No trusted devices. When you check "Remember me" during login and verify with 2FA, your device will be added here.</small>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+            </div>
+            {% endif %}
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Dashboard Cover End -->
+
+<style>
+  .tab-section {
+    display: none;
+  }
+  .tab-section.active {
+    display: block;
+  }
+  .dashboard-nav .nav-link {
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .dashboard-nav .nav-link:hover {
+    background-color: #f8f9fa;
+  }
+  .password-toggle-icon {
+    cursor: pointer;
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+  }
+  .password-toggle-icon:hover {
+    color: #495057;
+  }
+</style>
+
+<!-- Password Modal -->
+<div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="passwordModalLabel">Enter Password</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="passwordModalError" class="alert alert-danger d-none" role="alert"></div>
+        <form id="passwordModalForm">
+          <input type="hidden" id="passwordModalAction" value="">
+          <div class="mb-3">
+            <label for="passwordModalPassword" class="form-label">Password</label>
+            <div class="position-relative">
+              <input type="password" class="form-control" id="passwordModalPassword" required>
+              <span class="password-toggle-icon" onclick="togglePasswordVisibility('passwordModalPassword', this)">
+                <i class="feather-icon icon-eye" id="passwordModalPasswordIcon"></i>
+              </span>
+            </div>
+            <small class="form-text text-muted" id="passwordModalHint"></small>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="submitPasswordModal()">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="changePasswordModalLabel">
+          {% if has_password %}Change Password{% else %}Set Password{% endif %}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="changePasswordModalError" class="alert alert-danger d-none" role="alert"></div>
+        <div id="changePasswordModalSuccess" class="alert alert-success d-none" role="alert"></div>
+        <form id="changePasswordModalForm">
+          {% if has_password %}
+          <div class="mb-3">
+            <label for="changePasswordCurrent" class="form-label">Current Password</label>
+            <div class="position-relative">
+              <input type="password" class="form-control" id="changePasswordCurrent" required>
+              <span class="password-toggle-icon" onclick="togglePasswordVisibility('changePasswordCurrent', this)">
+                <i class="feather-icon icon-eye"></i>
+              </span>
+            </div>
+          </div>
+          {% endif %}
+          <div class="mb-3">
+            <label for="changePasswordNew" class="form-label">New Password</label>
+            <div class="position-relative">
+              <input type="password" class="form-control" id="changePasswordNew" minlength="8" required>
+              <span class="password-toggle-icon" onclick="togglePasswordVisibility('changePasswordNew', this)">
+                <i class="feather-icon icon-eye"></i>
+              </span>
+            </div>
+            <small class="form-text text-muted">Minimum 8 characters</small>
+          </div>
+          <div class="mb-3">
+            <label for="changePasswordConfirm" class="form-label">Confirm New Password</label>
+            <div class="position-relative">
+              <input type="password" class="form-control" id="changePasswordConfirm" minlength="8" required>
+              <span class="password-toggle-icon" onclick="togglePasswordVisibility('changePasswordConfirm', this)">
+                <i class="feather-icon icon-eye"></i>
+              </span>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="submitChangePassword()">{% if has_password %}Change Password{% else %}Set Password{% endif %}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Initialize configuration from data attributes
+const profileData = document.getElementById('profile-data');
+const config = {
+  hasPassword: profileData ? profileData.dataset.hasPassword === 'true' : false,
+  profileUrl: profileData ? profileData.dataset.profileUrl : '',
+  toggle2FaUrl: profileData ? profileData.dataset.toggle2FaUrl : '',
+  backupCodesUrl: profileData ? profileData.dataset.backupCodesUrl : '',
+  setPasswordUrl: profileData ? profileData.dataset.setPasswordUrl : ''
+};
+
+// Tab switching functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const navLinks = document.querySelectorAll('.dashboard-nav .nav-link[data-section]');
+  const sections = {
+    'profile': document.getElementById('profile-section'),
+    'security': document.getElementById('security-section')
+  };
+  
+  navLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      const targetSection = this.getAttribute('data-section');
+      
+      // Update active nav link
+      navLinks.forEach(l => l.classList.remove('active'));
+      this.classList.add('active');
+      
+      // Update active section
+      Object.values(sections).forEach(section => {
+        if (section) section.classList.remove('active');
+      });
+      if (sections[targetSection]) {
+        sections[targetSection].classList.add('active');
+      }
+      
+      // Update page title
+      const title = document.getElementById('section-title');
+      if (title) {
+        title.textContent = targetSection === 'profile' ? 'Profile Information' : 'Account Security';
+      }
+      
+      // Update URL without reload
+      const newUrl = config.profileUrl + '?section=' + targetSection;
+      window.history.pushState({section: targetSection}, '', newUrl);
+    });
+  });
+
+  // Ensure Enter key in password modal submits via JS (no page reload)
+  const passwordModalForm = document.getElementById('passwordModalForm');
+  if (passwordModalForm) {
+    passwordModalForm.addEventListener('submit', function(e) { e.preventDefault(); });
+    passwordModalForm.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        submitPasswordModal();
+      }
+    });
+  }
+
+  // Ensure Enter key in change password modal submits via JS (no page reload)
+  const changePasswordModalForm = document.getElementById('changePasswordModalForm');
+  if (changePasswordModalForm) {
+    changePasswordModalForm.addEventListener('submit', function(e) { e.preventDefault(); });
+    changePasswordModalForm.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        submitChangePassword();
+      }
+    });
+  }
+});
+
+// Password Modal Helper Functions
+function togglePasswordVisibility(inputId, iconElement) {
+    const input = document.getElementById(inputId);
+    const icon = iconElement.querySelector('i');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        // Try to change icon if icon-eye class exists
+        if (icon && icon.classList.contains('icon-eye')) {
+            icon.classList.remove('icon-eye');
+            // Try to add eye-off if it exists in the icon set
+            try {
+                icon.classList.add('icon-eye-off');
+            } catch(e) {
+                // Icon class might not exist, that's okay
+            }
+        }
+    } else {
+        input.type = 'password';
+        if (icon && icon.classList.contains('icon-eye-off')) {
+            icon.classList.remove('icon-eye-off');
+            icon.classList.add('icon-eye');
+        }
+    }
+}
+
+function showPasswordModal(action, title, hint) {
+    const modal = new bootstrap.Modal(document.getElementById('passwordModal'));
+    document.getElementById('passwordModalLabel').textContent = title;
+    document.getElementById('passwordModalAction').value = action;
+    document.getElementById('passwordModalPassword').value = '';
+    document.getElementById('passwordModalHint').textContent = hint || '';
+    document.getElementById('passwordModalError').classList.add('d-none');
+    document.getElementById('passwordModalError').textContent = '';
+    modal.show();
+}
+
+function submitPasswordModal() {
+    const password = document.getElementById('passwordModalPassword').value;
+    const action = document.getElementById('passwordModalAction').value;
+    const errorDiv = document.getElementById('passwordModalError');
+    
+    if (!password) {
+        errorDiv.textContent = 'Password is required';
+        errorDiv.classList.remove('d-none');
+        return;
+    }
+    
+    errorDiv.classList.add('d-none');
+    
+    // Get CSRF token
+    const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+    const csrfToken = csrfInput ? csrfInput.value : getCookie('csrftoken');
+    
+    let url, body;
+    
+    if (action === 'disable_2fa') {
+        url = '{% url "accounts:disable_2fa" %}';
+        body = 'password=' + encodeURIComponent(password);
+    } else if (action === 'show_backup_codes') {
+        url = config.backupCodesUrl;
+        body = 'password=' + encodeURIComponent(password);
+    } else if (action === 'reset_backup_codes') {
+        url = '{% url "accounts:reset_backup_codes" %}';
+        body = 'password=' + encodeURIComponent(password);
+    } else {
+        errorDiv.textContent = 'Invalid action';
+        errorDiv.classList.remove('d-none');
+        return;
+    }
+    
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken
+        },
+        body: body
+    })
+    .then(response => response.json())
+    .then(data => {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('passwordModal'));
+        modal.hide();
+        
+        if (data.success) {
+            if (action === 'disable_2fa') {
+                location.reload();
+            } else if (action === 'show_backup_codes') {
+                displayBackupCodes(data.backup_codes);
+            } else if (action === 'reset_backup_codes') {
+                alert('Backup codes reset successfully! Your new codes are:\n\n' + data.backup_codes.join('\n'));
+                location.reload();
+            }
+        } else {
+            errorDiv.textContent = 'Error: ' + (data.error || 'Failed to process request');
+            errorDiv.classList.remove('d-none');
+            // Re-show modal with error
+            const modal = new bootstrap.Modal(document.getElementById('passwordModal'));
+            modal.show();
+        }
+    })
+    .catch(error => {
+        errorDiv.textContent = 'Error: ' + error.message;
+        errorDiv.classList.remove('d-none');
+        const modal = new bootstrap.Modal(document.getElementById('passwordModal'));
+        modal.show();
+    });
+}
+
+function displayBackupCodes(codes) {
+    const container = document.getElementById('backup-codes-container');
+    const grid = document.getElementById('backup-codes-grid');
+    
+    // Clear existing codes
+    grid.innerHTML = '';
+    
+    // Display codes in a grid (2 columns, 4 rows for 8 codes)
+    codes.forEach((code, index) => {
+        const col = document.createElement('div');
+        col.className = 'col-6';
+        col.innerHTML = `<div class="border rounded p-2 text-center font-monospace">${code}</div>`;
+        grid.appendChild(col);
+    });
+    
+    // Show the container
+    container.classList.remove('d-none');
+    
+    // Hide the button and show message
+    const button = document.querySelector('[onclick="showBackupCodes()"]');
+    if (button) {
+        button.disabled = true;
+        button.textContent = 'Codes Revealed';
+        button.classList.remove('btn-outline-primary');
+        button.classList.add('btn-secondary');
+    }
+    
+    // Add a warning message if it doesn't exist
+    if (!container.nextElementSibling || !container.nextElementSibling.classList.contains('alert-warning')) {
+        const warning = document.createElement('div');
+        warning.className = 'alert alert-warning mt-2';
+        warning.innerHTML = '<small><strong>Important:</strong> Store these codes in a safe place. You won\'t be able to view them again.</small>';
+        container.parentNode.insertBefore(warning, container.nextSibling);
+    }
+}
+
+// Change Password Modal
+function showChangePasswordModal() {
+    const modal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+    document.getElementById('changePasswordCurrent').value = '';
+    document.getElementById('changePasswordNew').value = '';
+    document.getElementById('changePasswordConfirm').value = '';
+    document.getElementById('changePasswordModalError').classList.add('d-none');
+    document.getElementById('changePasswordModalSuccess').classList.add('d-none');
+    modal.show();
+}
+
+function submitChangePassword() {
+    const errorDiv = document.getElementById('changePasswordModalError');
+    const successDiv = document.getElementById('changePasswordModalSuccess');
+    errorDiv.classList.add('d-none');
+    successDiv.classList.add('d-none');
+    
+    const currentPassword = config.hasPassword ? document.getElementById('changePasswordCurrent').value : '';
+    const newPassword = document.getElementById('changePasswordNew').value;
+    const confirmPassword = document.getElementById('changePasswordConfirm').value;
+    
+    // Validation
+    if (config.hasPassword && !currentPassword) {
+        errorDiv.textContent = 'Current password is required';
+        errorDiv.classList.remove('d-none');
+        return;
+    }
+    
+    if (!newPassword || newPassword.length < 8) {
+        errorDiv.textContent = 'Password must be at least 8 characters long';
+        errorDiv.classList.remove('d-none');
+        return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        errorDiv.textContent = 'Passwords do not match';
+        errorDiv.classList.remove('d-none');
+        return;
+    }
+    
+    // Get CSRF token
+    const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+    const csrfToken = csrfInput ? csrfInput.value : getCookie('csrftoken');
+    
+    fetch(config.setPasswordUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken
+        },
+        body: 'current_password=' + encodeURIComponent(currentPassword) + 
+              '&new_password=' + encodeURIComponent(newPassword) + 
+              '&confirm_password=' + encodeURIComponent(confirmPassword)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            successDiv.textContent = data.message || 'Password updated successfully!';
+            successDiv.classList.remove('d-none');
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            errorDiv.textContent = 'Error: ' + (data.error || 'Failed to update password');
+            errorDiv.classList.remove('d-none');
+        }
+    })
+    .catch(error => {
+        errorDiv.textContent = 'Error: ' + error.message;
+        errorDiv.classList.remove('d-none');
+    });
+}
+
+// Toggle 2FA - redirects to setup or shows password modal for disabling
+function toggle2FA() {
+    const btn = document.querySelector('[onclick="toggle2FA()"]');
+    const action = btn ? btn.textContent.trim().toLowerCase() : 'toggle';
+    
+    if (action === 'enable') {
+        // Redirect to setup page
+        window.location.href = '{% url "accounts:setup_2fa" %}';
+        return;
+    }
+    
+    // Disabling requires password - show modal
+    showPasswordModal('disable_2fa', 'Disable Two-Step Verification', 'Please enter your password to disable two-step verification.');
+}
+
+// Show backup codes with password verification
+function showBackupCodes() {
+    showPasswordModal('show_backup_codes', 'View Backup Codes', 'Please enter your password to view backup codes.');
+}
+
+// Reset backup codes
+function resetBackupCodes() {
+    if (!confirm('Are you sure you want to reset your backup codes? The old codes will be invalidated.')) {
+        return;
+    }
+    
+    showPasswordModal('reset_backup_codes', 'Reset Backup Codes', 'Please enter your password to reset backup codes.');
+}
+
+// Delete trusted device
+function deleteTrustedDevice(deviceId) {
+    if (!confirm('Are you sure you want to remove this trusted device? You will need to verify with 2FA on this device again.')) {
+        return;
+    }
+    
+    // Get CSRF token
+    const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+    const csrfToken = csrfInput ? csrfInput.value : getCookie('csrftoken');
+    
+    fetch(`/accounts/delete-trusted-device/${deviceId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove the device from the UI
+            const deviceElement = document.getElementById(`device-${deviceId}`);
+            if (deviceElement) {
+                deviceElement.style.transition = 'opacity 0.3s';
+                deviceElement.style.opacity = '0';
+                setTimeout(() => {
+                    deviceElement.remove();
+                    // Check if no devices left
+                    const container = document.getElementById('trusted-devices-container');
+                    const listGroup = container.querySelector('.list-group');
+                    if (listGroup && listGroup.children.length === 0) {
+                        listGroup.innerHTML = `
+                            <div class="alert alert-info">
+                                <small>No trusted devices. When you check "Remember me" during login and verify with 2FA, your device will be added here.</small>
+                            </div>
+                        `;
+                    }
+                }, 300);
+            }
+        } else {
+            alert('Error: ' + (data.error || 'Failed to remove device'));
+        }
+    })
+    .catch(error => {
+        alert('Error: ' + error.message);
+    });
+}
+
+// Helper function to get CSRF token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+{% include 'trelix/footer.html' %} {% endblock %}
+

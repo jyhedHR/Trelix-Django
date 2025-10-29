@@ -1,8 +1,21 @@
 {% extends "trelix/base.html" %} 
 {% load static %}
 {% block title %}{{ evenement.titre }} - Trelix{% endblock %} 
+
 {% block content %} 
 {% include 'trelix/header.html' %}
+
+<!-- Messages -->
+{% if messages %}
+<div class="container mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
 
 <!-- Promo Section Start -->
 <section class="promo-sec2">
@@ -11,15 +24,13 @@
          <div class="col-lg-7">
             <nav aria-label="breadcrumb mt-0">
                <ol class="breadcrumb">
-                  <li class="breadcrumb-item"><a href="{% url 'home' %}">Accueil</a></li>
+                  <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                  <li class="breadcrumb-item"><a href="{% url 'evenement:liste_evenements' %}">Events</a></li>
                   <li class="breadcrumb-item active" aria-current="page">{{ evenement.titre }}</li>
                </ol>
             </nav>
             <div class="course-intro">
                <h1>{{ evenement.titre }}</h1>
-
-             
-               
             </div>
          </div>
       </div>
@@ -33,7 +44,7 @@
       <div class="row">
          <div class="col-lg-8">
             <article class="course-details pe-lg-4">
-               <!-- Image en grand format -->
+               <!-- Large format image -->
                <div class="event-hero-image mb-4">
                   {% if evenement.image %}
                      <img class="rounded-3 img-fluid w-100 event-main-image" src="{{ evenement.image.url }}" alt="{{ evenement.titre }}" style="max-height: 500px; object-fit: cover;">
@@ -41,29 +52,27 @@
                      <div class="bg-secondary rounded-3 d-flex align-items-center justify-content-center event-placeholder" style="height: 400px;">
                         <div class="text-center text-white">
                            <i class="feather-icon icon-calendar display-1"></i>
-                           <p class="mt-2 mb-0">Aucune image disponible</p>
+                           <p class="mt-2 mb-0">No image available</p>
                         </div>
                      </div>
                   {% endif %}
                </div>
-               
-              
 
                <!-- Event Tabs Start -->
                <div class="course-nav mt-5">
                   <nav id="navbar-example2" class="bg-white sticky-top">
                      <ul class="nav nav-pills">
                         <li class="nav-item">
-                           <a class="nav-link active" href="#overview"><i class="feather-icon icon-bookmark"></i> Aperçu</a>
+                           <a class="nav-link active" href="#overview"><i class="feather-icon icon-bookmark"></i> Overview</a>
                         </li>
                         <li class="nav-item">
-                           <a class="nav-link" href="#details"><i class="feather-icon icon-info"></i> Détails</a>
+                           <a class="nav-link" href="#details"><i class="feather-icon icon-info"></i> Details</a>
                         </li>
                         <li class="nav-item">
-                           <a class="nav-link" href="#location"><i class="feather-icon icon-map-pin"></i> Localisation</a>
+                           <a class="nav-link" href="#location"><i class="feather-icon icon-tag text"></i> Description</a>
                         </li>
                         <li class="nav-item">
-                           <a class="nav-link" href="#about"><i class="feather-icon icon-book"></i> À Propos</a>
+                           <a class="nav-link" href="#about"><i class="feather-icon icon-book"></i> About</a>
                         </li>
                      </ul>
                   </nav>
@@ -73,22 +82,22 @@
                      
                      <!-- Overview Section -->
                      <div class="inner-sec" id="overview">
-                        <h2 class="display-4 fw-bold">Aperçu de l'événement</h2>
-                        <p class="lead">Les hackathons et les formations représentent deux approches complémentaires pour stimuler l’apprentissage et l’innovation. Les hackathons sont des événements collaboratifs où des participants, souvent issus de domaines variés, conçoivent des solutions créatives à des problèmes concrets en un temps limité. Ils favorisent le travail d’équipe, la pensée critique et la mise en pratique des connaissances. De leur côté, les formations offrent un cadre structuré pour acquérir ou perfectionner des compétences techniques et professionnelles. Ensemble, ces expériences contribuent à renforcer l’esprit d’innovation, l’employabilité et l’adaptation aux exigences du monde numérique.</p>
+                        <h2 class="display-4 fw-bold">Event Overview</h2>
+                        <p class="lead">Hackathons and training represent two complementary approaches to stimulate learning and innovation. Hackathons are collaborative events where participants, often from various fields, design creative solutions to concrete problems within a limited time. They promote teamwork, critical thinking, and the practical application of knowledge. On the other hand, training provides a structured framework to acquire or improve technical and professional skills. Together, these experiences help strengthen the spirit of innovation, employability, and adaptation to the demands of the digital world.</p>
                         
                         <div class="row mt-4">
                            <div class="col-md-6">
                               <div class="info-card bg-light p-3 rounded-3 h-100">
-                                 <h5 class="display-5"><i class="feather-icon icon-calendar text-primary me-2"></i> Date et Heure</h5>
-<p class="mb-1"><strong>Début:</strong> {{ evenement.date_debut|date:"d/m/Y" }}</p>
-                                 <p class="mb-0"><strong>Fin:</strong> {{ evenement.date_fin|date:"d/m/Y" }}</p>
+                                 <h5 class="display-5"><i class="feather-icon icon-calendar text-primary me-2"></i> Date and Time</h5>
+                                 <p class="mb-1"><strong>Start:</strong> {{ evenement.date_debut|date:"d/m/Y" }}</p>
+                                 <p class="mb-0"><strong>End:</strong> {{ evenement.date_fin|date:"d/m/Y" }}</p>
                                  <p class="mt-2 text-muted small">
                                     <i class="feather-icon icon-clock me-1"></i>
-                                    Durée: 
+                                    Duration: 
                                     {% if evenement.date_debut.date == evenement.date_fin.date %}
                                        {{ evenement.date_debut|timesince:evenement.date_fin }}
                                     {% else %}
-                                       Plusieurs jours
+                                       Multiple days
                                     {% endif %}
                                  </p>
                               </div>
@@ -96,10 +105,10 @@
                            <div class="col-md-6">
                               <div class="info-card bg-light p-3 rounded-3 h-100">
                                  <h5 class="display-5"><i class="feather-icon icon-users text-primary me-2"></i> Participants</h5>
-                                 <p class="mb-0"><strong>Capacité maximale:</strong> {{ evenement.capacite_max }} personnes</p>
+                                 <p class="mb-0"><strong>Maximum capacity:</strong> {{ evenement.capacite_max }} people</p>
                                  <p class="mt-2 text-muted small">
                                     <i class="feather-icon icon-user-check me-1"></i>
-                                    {{ evenement.public_cible|default:"Ouvert à tous les publics" }}
+                                    {{ evenement.public_cible|default:"Open to all audiences" }}
                                  </p>
                               </div>
                            </div>
@@ -108,13 +117,13 @@
                      
                      <!-- Details Section -->
                      <div class="inner-sec" id="details">
-                        <h2 class="display-4 fw-bold">Détails de l'événement</h2>
+                        <h2 class="display-4 fw-bold">Event Details</h2>
                         
                         <div class="event-details-grid">
                            <div class="detail-item">
                               <i class="feather-icon icon-tag"></i>
                               <div>
-                                 <strong>Type d'événement</strong>
+                                 <strong>Event Type</strong>
                                  <p>{{ evenement.get_type_display }}</p>
                               </div>
                            </div>
@@ -122,20 +131,20 @@
                            <div class="detail-item">
                               <i class="feather-icon icon-target"></i>
                               <div>
-                                 <strong>Public cible</strong>
-                                 <p>{{ evenement.public_cible|default:"Tous publics" }}</p>
+                                 <strong>Target Audience</strong>
+                                 <p>{{ evenement.public_cible|default:"All audiences" }}</p>
                               </div>
                            </div>
                            
                            <div class="detail-item">
                               <i class="feather-icon icon-dollar-sign"></i>
                               <div>
-                                 <strong>Prix</strong>
+                                 <strong>Price</strong>
                                  <p>
                                     {% if evenement.prix %}
                                        {{ evenement.prix }} €
                                     {% else %}
-                                       <span class="text-success">Gratuit</span>
+                                       <span class="text-success">Free</span>
                                     {% endif %}
                                  </p>
                               </div>
@@ -145,15 +154,15 @@
                               <i class="feather-icon icon-award"></i>
                               <div>
                                  <strong>Certification</strong>
-                                 <p>{{ evenement.certification|default:"Attestation de participation" }}</p>
+                                 <p>{{ evenement.certification|default:"Participation certificate" }}</p>
                               </div>
                            </div>
                         </div>
 
-                        <!-- Description détaillée -->
+                        <!-- Detailed description -->
                         {% if evenement.description_complete %}
                         <div class="mt-4">
-                           <h4 class="display-5 fw-bold">Description Complète</h4>
+                           <h4 class="display-5 fw-bold">Complete Description</h4>
                            <div class="bg-light p-4 rounded-3">
                               {{ evenement.description_complete|linebreaks }}
                            </div>
@@ -163,21 +172,19 @@
                      
                      <!-- Location Section -->
                      <div class="inner-sec" id="location">
-                        <h2 class="display-4 fw-bold">Localisation & Accès</h2>
+                        <h2 class="display-4 fw-bold">Description</h2>
                         <div class="location-info">
                            <div class="d-flex align-items-start mb-4">
-                              <i class="feather-icon icon-map-pin text-primary me-3 mt-1"></i>
                               <div class="flex-grow-1">
-                                 <h5 class="display-5 mb-2">Lieu de l'événement</h5>
-                                 <p class="fs-5 mb-1"><strong>{{ evenement.lieu }}</strong></p>
+                                 <p class="fs-5 mb-1"><strong>{{ evenement.description }}</strong></p>
                                  {% if evenement.adresse %}
                                     <p class="text-muted mb-3">{{ evenement.adresse }}</p>
                                  {% endif %}
                                  
-                                 <!-- Description du lieu -->
+                                 <!-- Venue description -->
                                  {% if evenement.description_lieu %}
                                     <div class="bg-light p-3 rounded-2 mt-2">
-                                       <h6 class="fw-bold mb-2">À propos du lieu :</h6>
+                                       <h6 class="fw-bold mb-2">About the venue:</h6>
                                        <p class="mb-0">{{ evenement.description_lieu }}</p>
                                     </div>
                                  {% endif %}
@@ -188,10 +195,10 @@
                            <div class="d-flex align-items-start mt-4 pt-3 border-top">
                               <i class="feather-icon icon-video text-primary me-3 mt-1"></i>
                               <div>
-                                 <h5 class="display-5 mb-2">Participation en ligne</h5>
-                                 <p class="mb-3">Cet événement est également accessible en ligne via notre plateforme de visioconférence.</p>
+                                 <h5 class="display-5 mb-2">Online Participation</h5>
+                                 <p class="mb-3">This event is also accessible online via our video conferencing platform.</p>
                                  <a href="{{ evenement.lien_visio }}" class="btn btn-primary btn-sm" target="_blank">
-                                    <i class="feather-icon icon-video me-1"></i>Rejoindre la visioconférence
+                                    <i class="feather-icon icon-video me-1"></i>Join video conference
                                  </a>
                               </div>
                            </div>
@@ -201,66 +208,66 @@
 
                      <!-- About Section -->
                      <div class="inner-sec" id="about">
-                        <h2 class="display-4 fw-bold">À Propos des {{ evenement.get_type_display }}s</h2>
+                        <h2 class="display-4 fw-bold">About {{ evenement.get_type_display }}s</h2>
                         
                         {% if evenement.type == 'hackathon' %}
                         <div class="about-content">
-                           <h4 class="display-5 text-primary">Qu'est-ce qu'un Hackathon ?</h4>
-                           <p>Un hackathon est un événement collaboratif où des développeurs, designers, entrepreneurs et experts se réunissent pour travailler intensivement sur des projets innovants. Pendant 24 à 48 heures, les participants forment des équipes et créent des prototypes fonctionnels pour résoudre des défis spécifiques.</p>
+                           <h4 class="display-5 text-primary">What is a Hackathon?</h4>
+                           <p>A hackathon is a collaborative event where developers, designers, entrepreneurs, and experts come together to work intensively on innovative projects. For 24 to 48 hours, participants form teams and create functional prototypes to solve specific challenges.</p>
                            
-                           <h5 class="mt-4">Les avantages d'un Hackathon :</h5>
+                           <h5 class="mt-4">Benefits of a Hackathon:</h5>
                            <ul class="benefits-list">
-                              <li><i class="feather-icon icon-zap text-warning me-2"></i><strong>Innovation rapide</strong> - Prototypage accéléré</li>
-                              <li><i class="feather-icon icon-users text-info me-2"></i><strong>Réseautage</strong> - Rencontrez des passionnés</li>
-                              <li><i class="feather-icon icon-award text-success me-2"></i><strong>Apprentissage</strong> - Nouvelles technologies</li>
-                              <li><i class="feather-icon icon-briefcase text-primary me-2"></i><strong>Opportunités</strong> - Découverte de talents</li>
+                              <li><i class="feather-icon icon-zap text-warning me-2"></i><strong>Rapid innovation</strong> - Accelerated prototyping</li>
+                              <li><i class="feather-icon icon-award text-success me-2"></i><strong>Networking</strong> - Meet passionate people</li>
+                              <li><i class="feather-icon icon-award text-success me-2"></i><strong>Learning</strong> - New technologies</li>
+                              <li><i class="feather-icon icon-briefcase text-primary me-2"></i><strong>Opportunities</strong> - Talent discovery</li>
                            </ul>
                         </div>
                         
                         {% elif evenement.type == 'workshop' %}
                         <div class="about-content">
-                           <h4 class="display-5 text-primary">Ateliers Pratiques</h4>
-                           <p>Nos workshops sont conçus pour offrir une expérience d'apprentissage pratique et immersive. Contrairement aux formations théoriques, nos ateliers mettent l'accent sur la mise en pratique immédiate des concepts enseignés.</p>
+                           <h4 class="display-5 text-primary">Practical Workshops</h4>
+                           <p>Our workshops are designed to provide a practical and immersive learning experience. Unlike theoretical training, our workshops emphasize the immediate application of taught concepts.</p>
                            
-                           <h5 class="mt-4">Ce que vous allez acquérir :</h5>
+                           <h5 class="mt-4">What you will acquire:</h5>
                            <ul class="benefits-list">
-                              <li><i class="feather-icon icon-settings text-warning me-2"></i><strong>Compétences pratiques</strong> - Application directe</li>
-                              <li><i class="feather-icon icon-help-circle text-info me-2"></i><strong>Support expert</strong> - Guidance personnalisée</li>
-                              <li><i class="feather-icon icon-file-text text-success me-2"></i><strong>Ressources</strong> - Documentation complète</li>
-                              <li><i class="feather-icon icon-star text-primary me-2"></i><strong>Projet concret</strong> - Réalisation d'un mini-projet</li>
+                              <li><i class="feather-icon icon-settings text-warning me-2"></i><strong>Practical skills</strong> - Direct application</li>
+                              <li><i class="feather-icon icon-help-circle text-info me-2"></i><strong>Expert support</strong> - Personalized guidance</li>
+                              <li><i class="feather-icon icon-file-text text-success me-2"></i><strong>Resources</strong> - Complete documentation</li>
+                              <li><i class="feather-icon icon-star text-primary me-2"></i><strong>Concrete project</strong> - Mini-project realization</li>
                            </ul>
                         </div>
                         
                         {% elif evenement.type == 'conference' %}
                         <div class="about-content">
-                           <h4 class="display-5 text-primary">Conférences Éducatives</h4>
-                           <p>Nos conférences rassemblent des experts et thought leaders pour partager les dernières tendances, recherches et innovations dans le domaine de l'éducation et de la technologie.</p>
+                           <h4 class="display-5 text-primary">Educational Conferences</h4>
+                           <p>Our conferences bring together experts and thought leaders to share the latest trends, research, and innovations in the field of education and technology.</p>
                            
-                           <h5 class="mt-4">Au programme :</h5>
+                           <h5 class="mt-4">On the program:</h5>
                            <ul class="benefits-list">
-                              <li><i class="feather-icon icon-trending-up text-warning me-2"></i><strong>Tendances actuelles</strong> - Veille technologique</li>
-                              <li><i class="feather-icon icon-eye text-info me-2"></i><strong>Vision stratégique</strong> - Perspectives d'avenir</li>
-                              <li><i class="feather-icon icon-share-2 text-success me-2"></i><strong>Partage d'expertise</strong> - Retours d'expérience</li>
-                              <li><i class="feather-icon icon-globe text-primary me-2"></i><strong>Réseau professionnel</strong> - Échanges enrichissants</li>
+                              <li><i class="feather-icon icon-trending-up text-warning me-2"></i><strong>Current trends</strong> - Technological watch</li>
+                              <li><i class="feather-icon icon-eye text-info me-2"></i><strong>Strategic vision</strong> - Future perspectives</li>
+                              <li><i class="feather-icon icon-share-2 text-success me-2"></i><strong>Expertise sharing</strong> - Experience feedback</li>
+                              <li><i class="feather-icon icon-globe text-primary me-2"></i><strong>Professional network</strong> - Enriching exchanges</li>
                            </ul>
                         </div>
                         
                         {% else %}
                         <div class="about-content">
-                           <h4 class="display-5 text-primary">Formation Continue & E-Learning</h4>
-                           <p>Dans un monde en constante évolution, la formation continue est essentielle pour rester compétitif. Nos événements éducatifs combinent expertise pédagogique et innovation technologique pour offrir des expériences d'apprentissage transformatrices.</p>
+                           <h4 class="display-5 text-primary">Continuing Education & E-Learning</h4>
+                           <p>In a constantly evolving world, continuing education is essential to remain competitive. Our educational events combine pedagogical expertise and technological innovation to offer transformative learning experiences.</p>
                            
-                           <h5 class="mt-4">Notre approche :</h5>
+                           <h5 class="mt-4">Our approach:</h5>
                            <ul class="benefits-list">
-                              <li><i class="feather-icon icon-book-open text-warning me-2"></i><strong>Pédagogie active</strong> - Apprentissage par la pratique</li>
-                              <li><i class="feather-icon icon-cast text-info me-2"></i><strong>Technologie innovante</strong> - Outils modernes</li>
-                              <li><i class="feather-icon icon-user-check text-success me-2"></i><strong>Personnalisation</strong> - Adapté à vos besoins</li>
-                              <li><i class="feather-icon icon-bar-chart-2 text-primary me-2"></i><strong>Suivi de progression</strong> - Mesure des résultats</li>
+                              <li><i class="feather-icon icon-book-open text-warning me-2"></i><strong>Active pedagogy</strong> - Learning by doing</li>
+                              <li><i class="feather-icon icon-cast text-info me-2"></i><strong>Innovative technology</strong> - Modern tools</li>
+                              <li><i class="feather-icon icon-user-check text-success me-2"></i><strong>Personalization</strong> - Adapted to your needs</li>
+                              <li><i class="feather-icon icon-bar-chart-2 text-primary me-2"></i><strong>Progress tracking</strong> - Results measurement</li>
                            </ul>
                            
                            <div class="mt-4 p-3 bg-light rounded-2">
-                              <h6 class="fw-bold">L'avenir de l'éducation est collaboratif et numérique</h6>
-                              <p class="mb-0">Nous croyons en une éducation accessible, engageante et transformatrice. Rejoignez notre communauté d'apprenants passionnés et participez à la révolution de l'éducation numérique.</p>
+                              <h6 class="fw-bold">The future of education is collaborative and digital</h6>
+                              <p class="mb-0">We believe in accessible, engaging, and transformative education. Join our community of passionate learners and participate in the digital education revolution.</p>
                            </div>
                         </div>
                         {% endif %}
@@ -281,7 +288,7 @@
                         <div class="bg-secondary rounded-2 d-flex align-items-center justify-content-center" style="height: 200px;">
                            <div class="text-center text-white">
                               <i class="feather-icon icon-calendar display-4"></i>
-                              <p class="mt-2 mb-0">Aucune image</p>
+                              <p class="mt-2 mb-0">No image</p>
                            </div>
                         </div>
                      {% endif %}
@@ -291,48 +298,69 @@
                      <h3 class="display-4">
                         {% if evenement.prix %}
                            {{ evenement.prix }} €
-                       
+                      
                         {% endif %}
                      </h3>
                      {% if evenement.date_debut > now %}
-                        <span class="badge bg-success"><i class="feather-icon icon-clock me-1"></i>À venir</span>
+                        <span class="badge bg-success"><i class="feather-icon icon-clock me-1"></i>Upcoming</span>
                      {% elif evenement.date_fin < now %}
-                        <span class="badge bg-secondary"><i class="feather-icon icon-check me-1"></i>Terminé</span>
-                                          {% endif %}
+                        <span class="badge bg-secondary"><i class="feather-icon icon-check me-1"></i>Completed</span>
+                    
+                     {% endif %}
                   </div>
                   
-                  
+                  <!-- MODIFIED PARTICIPATION SECTION -->
                   <div class="btn-cta mt-4">
-                     {% if evenement.date_debut > now %}
-                        <a href="#" class="btn btn-primary rounded-2 w-100">
-                           <i class="feather-icon icon-user-plus me-1"></i>S'inscrire
-                        </a>
-                     {% elif evenement.date_fin < now %}
-                        <button class="btn btn-secondary rounded-2 w-100" disabled>
-                           <i class="feather-icon icon-calendar me-1"></i>Événement terminé
+                     {% if deja_participe %}
+                        <button class="btn btn-success rounded-2 w-100" disabled>
+                           <i class="feather-icon icon-check me-1"></i>Already participating
                         </button>
+                        <form method="post" action="{% url 'participation:annuler_participation' evenement.id %}" class="mt-2">
+                           {% csrf_token %}
+                           <button type="submit" class="btn btn-outline-danger rounded-2 w-100" 
+                                   onclick="return confirm('Are you sure you want to cancel your participation?')">
+                               <i class="feather-icon icon-x me-1"></i>Cancel participation
+                           </button>
+                        </form>
                      {% else %}
-                        <a href="#" class="btn btn-primary rounded-2 w-100">
-                           <i class="feather-icon icon-play me-1"></i>Participer
-                        </a>
+                        {% if evenement.date_debut > now %}
+                           <a href="{% url 'participation:participer_evenement' evenement.id %}" class="btn btn-primary rounded-2 w-100">
+                               <i class="feather-icon icon-user-plus me-1"></i>Participate
+                           </a>
+                        {% elif evenement.date_fin < now %}
+                           <button class="btn btn-secondary rounded-2 w-100" disabled>
+                               <i class="feather-icon icon-calendar me-1"></i>Event completed
+                           </button>
+                        {% else %}
+                           <a href="{% url 'participation:participer_evenement' evenement.id %}" class="btn btn-primary rounded-2 w-100">
+                               <i class="feather-icon icon-play me-1"></i>Participate
+                           </a>
+                        {% endif %}
                      {% endif %}
                      
-                   
+                     <!-- Link to my participations -->
+                     {% if user.is_authenticated %}
+                     <div class="text-center mt-3">
+                        <a href="{% url 'participation:mes_participations' %}" class="text-primary small">
+                            <i class="feather-icon icon-list me-1"></i>View my participations
+                        </a>
+                     </div>
+                     {% endif %}
                   </div>
                   
                   <div class="price-widget-inner mt-4">
                      <ul>
-                        <li><i class="feather-icon icon-calendar text-primary"></i>Date de début <span>{{ evenement.date_debut|date:"d/m/Y" }}</span></li>
-                        <li><i class="feather-icon icon-calendar text-primary"></i>Date de fin <span>{{ evenement.date_fin|date:"d/m/Y" }}</span></li>
-                        <li><i class="feather-icon icon-map-pin text-primary"></i>Lieu <span>{{ evenement.lieu }}</span></li>
-                        <li><i class="feather-icon icon-users text-primary"></i>Capacité <span>{{ evenement.capacite_max }} places</span></li>
+                        <li><i class="feather-icon icon-calendar text-primary"></i>Start date <span>{{ evenement.date_debut|date:"d/m/Y" }}</span></li>
+                        <li><i class="feather-icon icon-calendar text-primary"></i>End date <span>{{ evenement.date_fin|date:"d/m/Y" }}</span></li>
+                        <li><i class="feather-icon icon-map-pin text-primary"></i>Location <span>{{ evenement.lieu }}</span></li>
+                        <li><i class="feather-icon icon-users text-primary"></i>Capacity <span>{{ evenement.capacite_max }} spots</span></li>
                         <li><i class="feather-icon icon-tag text-primary"></i>Type <span>{{ evenement.get_type_display }}</span></li>
-                        <li><i class="feather-icon icon-dollar-sign text-primary"></i>Prix <span>{{ evenement.prix|default:"Gratuit" }}</span></li>
+                        <li><i class="feather-icon icon-dollar-sign text-primary"></i>Price <span>{{ evenement.prix|default:"Free" }}</span></li>
                      </ul>
                   </div>
                   
                   <div class="card bg-shade p-3 text-center mt-4">
-                     <h6>Partager cet événement</h6>
+                     <h6>Share this event</h6>
                      <div class="social-share white my-3 border-bottom pb-3">
                         <a href="#"><i class="feather-icon icon-facebook"></i></a>
                         <a href="#"><i class="feather-icon icon-linkedin"></i></a>
@@ -343,7 +371,7 @@
                      {% if user.is_staff %}
                      <div class="admin-actions mt-3">
                         <a href="{% url 'admin:evenement_evenement_change' evenement.id %}" class="btn btn-warning btn-sm w-100">
-                           <i class="feather-icon icon-edit me-1"></i>Modifier l'événement
+                           <i class="feather-icon icon-edit me-1"></i>Edit event
                         </a>
                      </div>
                      {% endif %}
@@ -361,14 +389,14 @@
    <div class="container">
       <div class="row align-items-center">
          <div class="col-lg-8">
-            <span class="badge-lg bg-white text-primary rounded-5">Restez Informé</span>
-            <h2 class="display-2 fw-bold text-info">Abonnez-vous à notre <span class="color-info">Newsletter</span></h2>
+            <span class="badge-lg bg-white text-primary rounded-5">Stay Informed</span>
+            <h2 class="display-2 fw-bold text-info">Subscribe to our <span class="color-info">Newsletter</span></h2>
          </div>
          <div class="col-lg-4">
             <div class="newsletter-form">
                <form action="#">
-                  <input class="form-control rounded-5 bg-info" type="email" placeholder="Adresse Email">
-                  <button class="btn btn-secondary w-100 rounded-5 mt-4">S'abonner</button>
+                  <input class="form-control rounded-5 bg-info" type="email" placeholder="Email Address">
+                  <button class="btn btn-secondary w-100 rounded-5 mt-4">Subscribe</button>
                </form>
             </div>
          </div>
@@ -396,7 +424,7 @@
    margin-bottom: 1.5rem;
 }
 
-/* Image principale en grand */
+/* Main image in large format */
 .event-hero-image {
    position: relative;
    overflow: hidden;

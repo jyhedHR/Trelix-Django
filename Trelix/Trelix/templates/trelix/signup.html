@@ -16,7 +16,7 @@
       <div class="col-xl-7 col-md-7">
         <div class="signup-form">
           <h1 class="display-3 text-center mb-5">Let's Sign Up Eduxo</h1>
-          <form method="post" action="{% url 'signup' %}">
+          <form method="post" action="{% url 'accounts:signup' %}">
             {% csrf_token %} {{ form.non_field_errors }}
 
             <div class="form-group position-relative">
@@ -114,7 +114,7 @@
 
               <p>
                 Already have an account?
-                <a href="{% url 'signin' %}" class="text-primary fw-bold"
+                <a href="{% url 'accounts:signin' %}" class="text-primary fw-bold"
                   >Login Now</a
                 >
               </p>

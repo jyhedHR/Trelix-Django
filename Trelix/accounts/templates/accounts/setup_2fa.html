@@ -1,0 +1,55 @@
+{% extends "trelix/base.html" %}
+{% load static %}
+
+{% block title %} Setup Two-Step Verification {% endblock %}
+
+{% block content %}
+<section class="signup-sec full-screen">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-xl-5 col-md-5">
+        <div class="signup-thumb">
+          <img class="img-fluid" src="{% static 'images/shape-bg.png' %}" alt="Setup 2FA" />
+        </div>
+      </div>
+      <div class="col-xl-7 col-md-7">
+        <div class="login-form">
+          <h1 class="display-3 text-center mb-4">Setup Two-Step Verification</h1>
+          
+          <div class="alert alert-info">
+            <h5 class="alert-heading">What is Two-Step Verification?</h5>
+            <p class="mb-0">
+              Two-step verification adds an extra layer of security to your account. 
+              After entering your password, you'll need to enter a 6-digit code from your 
+              authenticator app to complete the login process.
+            </p>
+          </div>
+
+          <div class="mb-4">
+            <h5>How it works:</h5>
+            <ol>
+              <li>Download an authenticator app like Google Authenticator, Authy, or Microsoft Authenticator</li>
+              <li>Scan the QR code that will be shown on the next page</li>
+              <li>Save your backup codes in a safe place</li>
+              <li>Verify the setup by entering a code from your authenticator app</li>
+            </ol>
+          </div>
+
+          <div class="alert alert-warning">
+            <strong>Important:</strong> Make sure you have an authenticator app installed on your mobile device before proceeding.
+          </div>
+
+          <form method="post" action="{% url 'accounts:setup_2fa' %}">
+            {% csrf_token %}
+            <div class="d-flex gap-3">
+              <button type="submit" class="btn btn-primary flex-grow-1">Continue Setup</button>
+              <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
