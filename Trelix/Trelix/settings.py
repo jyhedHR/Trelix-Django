@@ -247,3 +247,5 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL  # Used for error messages
 # 🧱 DEFAULT PRIMARY KEY FIELD
 # -------------------------------------------------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+GEMINI_MODEL_NAME = os.getenv('GEMINI_MODEL_NAME', 'models/gemini-2.5-flash-lite')
