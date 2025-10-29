@@ -13,6 +13,8 @@ import sys
 # 📁 BASE & ENV
 # -------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Charger les variables d'environnement depuis le fichier .env
 load_dotenv(BASE_DIR / '.env')
@@ -121,9 +123,77 @@ USE_TZ = True
 # 🖼️ STATIC & MEDIA FILES
 # -------------------------------------------------------------
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'Trelix' / 'static']  # ou "static" selon ton projet
-STATIC_ROOT = BASE_DIR / 'staticfiles'  # utile pour collectstatic en prod
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"), 
+]
 
+
+
+# Media files (uploaded by users)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ========================
+# 🎨 JAZZMIN CONFIGURATION
+# ========================
+JAZZMIN_SETTINGS = {
+    "site_title": "Trelix Admin",
+    "site_header": "Trelix Dashboard",
+    "site_brand": "Trelix",
+    "welcome_sign": "Welcome to the Trelix Admin Dashboard 👋",
+    "copyright": "© 2025 Trelix | All rights reserved",
+    
+    # 🌗 Theme
+    "show_ui_builder": True,
+    "theme": "materia",  # You can also try: flatly, darkly, minty, solar, etc.
+    
+    # 🧭 Top Menu
+    "topmenu_links": [
+        {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "Website", "url": "/", "new_window": True},
+    ],
+
+    # 🧩 Sidebar
+    "order_with_respect_to": ["auth", "Trelix"],
+
+    # 💎 Custom icons for each model
+    "icons": {
+        "auth": "fas fa-user-shield",
+        "auth.User": "fas fa-user",
+        "auth.Group": "fas fa-users",
+        "Trelix.Exam": "fas fa-file-alt",
+        "Trelix.Question": "fas fa-question-circle",
+        "Trelix.StudentExam": "fas fa-graduation-cap",
+        "Trelix.Certificate": "fas fa-award",
+    },
+
+    # 🌍 Customization
+    "default_icon_parents": "fas fa-folder",
+    "default_icon_children": "fas fa-file",
+}
+
+# Optional: extra colors and layout tweaks
+JAZZMIN_UI_TWEAKS = {
+    "navbar": "navbar-dark",
+    "footer_fixed": True,
+    "theme": "darkly",
+    "body_small_text": True,
+    "sidebar_fixed": True,
+    "sidebar_light": False,
+    "button_classes": {
+        "primary": "btn-primary",
+        "success": "btn-success",
+    },
+}
+JAZZMIN_SETTINGS["site_logo"] = "images/trelix_blanc.png"
+
+# Media files (uploads)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
