@@ -199,12 +199,25 @@
 }
 
 </style>
-
-<div class="exams-container">
-  <div class="exams-header">
-    <h1>Available Exams</h1>
-    <p>Select an exam to begin your assessment</p>
+<section class="promo-sec" style="background: url('{% static 'images/promo-bg.jpg' %}') no-repeat center center / cover;">
+  <img src="{% static 'images/promo-left.png' %}" alt="" class="anim-img">
+  <img src="{% static 'images/promo-right.png' %}" alt="" class="anim-img anim-right">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12 text-center">
+        <h1 class="display-2 text-white">Exams</h1>
+        <nav aria-label="breadcrumb mt-0">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Exams</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
   </div>
+</section>
+<div class="exams-container">
+  
 
  {% if exams_status %}
   <div class="exams-grid">

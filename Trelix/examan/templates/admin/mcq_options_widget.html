@@ -1,0 +1,20 @@
+<div class="mcq-options-widget">
+    {% for option in widget.options %}
+        <div class="form-row">
+            <label for="{{ widget.attrs.id_for_label }}_option_{{ forloop.counter0 }}">
+                Option {{ forloop.counter }}:
+            </label>
+            <input type="text" 
+                   name="{{ widget.name }}_option_{{ forloop.counter0 }}"
+                   id="{{ widget.attrs.id_for_label }}_option_{{ forloop.counter0 }}"
+                   value="{{ option }}" 
+                   class="vTextField" 
+                   maxlength="255"
+                   placeholder="Enter option {{ forloop.counter }} here">
+        </div>
+    {% endfor %}
+    <p class="help">
+        <strong>Tip:</strong> Enter at least 2 options for multiple choice questions.
+        The correct answer must match one of these options exactly.
+    </p>
+</div>
