@@ -1,0 +1,21 @@
+<div class="exam-result">
+  <h3>{{ exam.title }} - Result</h3>
+  <p><strong>Score:</strong> {{ student_exam.score|floatformat:2 }}%</p>
+  <p><strong>Completed on:</strong> {{ student_exam.completed_at|date:"d M Y H:i" }}</p>
+
+  <hr>
+  <h4>Your Answers:</h4>
+  <ul>
+    {% for answer in answers %}
+      <li style="margin-bottom: 8px;">
+        <strong>{{ answer.question.text }}</strong><br>
+        Your answer: {{ answer.text }}<br>
+        {% if answer.text|lower == answer.question.correct_answer|lower %}
+          ✅ <span style="color: green;">Correct</span>
+        {% else %}
+          ❌ <span style="color: red;">Correct answer: {{ answer.question.correct_answer }}</span>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</div>
