@@ -27,7 +27,7 @@ print("Filesystem encoding:", sys.getfilesystemencoding())
 # 🔐 SECURITY
 # -------------------------------------------------------------
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-key')
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
