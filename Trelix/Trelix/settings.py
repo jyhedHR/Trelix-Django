@@ -71,7 +71,11 @@ CLOUDINARY_STORAGE = {
     'API_KEY': '877561497749136',
     'API_SECRET': 'Sesr-gb8Cjsrg7l70Czt7jd3zt8'
 }
-
+cloudinary.config(
+    cloud_name='dejmvcyfl',
+    api_key='877561497749136',
+    api_secret='Sesr-gb8Cjsrg7l70Czt7jd3zt8'
+)
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
