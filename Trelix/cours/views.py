@@ -11,14 +11,41 @@ import json
 from xhtml2pdf import pisa
 from django.template.loader import render_to_string
 from django.http import HttpResponse
+from django.views.decorators.http import require_POST
 
-import json
 
 def course_list(request):
     courses = Course.objects.filter(is_published=True)
     return render(request, 'Trelix/courses.html', {'courses': courses})
 
-import json
+@csrf_exempt
+@require_POST
+def filter_courses(request):
+    """
+    Filtre les cours par niveau via POST JSON
+    """
+    try:
+        body = json.loads(request.body)
+        levels = body.get("levels", [])
+    except json.JSONDecodeError:
+        levels = []
+
+    if not levels or "all" in levels:
+        courses = Course.objects.filter(is_published=True)
+    else:
+        courses = Course.objects.filter(level__in=levels, is_published=True)
+
+    data = [
+        {
+            "id": c.id,
+            "title": c.title,
+            "description": c.description[:120] + "..." if len(c.description) > 120 else c.description,
+            "level": c.level.title(),
+            "image": c.image.url if c.image else "",
+        }
+        for c in courses
+    ]
+    return JsonResponse({"courses": data})
 
 def course_detail(request, course_id):
     course = get_object_or_404(Course, pk=course_id, is_published=True)
