@@ -1,0 +1,217 @@
+import secrets
+import pyotp
+import hashlib
+from django.conf import settings
+from .models import Profile, TrustedDevice
+
+
+def generate_backup_codes(count=8):
+    """
+    Generate cryptographically secure backup codes.
+    
+    Args:
+        count: Number of codes to generate (default: 8)
+    
+    Returns:
+        List of backup codes as strings
+    """
+    return [secrets.token_hex(4).upper() for _ in range(count)]
+
+
+def validate_backup_code(profile, code):
+    """
+    Validate a backup code and mark it as used.
+    
+    Args:
+        profile: Profile instance
+        code: Backup code to validate
+    
+    Returns:
+        bool: True if valid, False otherwise
+    """
+    if not profile.backup_codes:
+        return False
+    
+    # Normalize code (remove spaces, uppercase)
+    normalized_code = code.strip().upper()
+    
+    # Check if code exists
+    if normalized_code not in profile.backup_codes:
+        return False
+    
+    # Remove used code
+    profile.backup_codes.remove(normalized_code)
+    profile.save()
+    
+    return True
+
+
+def generate_totp_secret():
+    """
+    Generate a new TOTP secret.
+    
+    Returns:
+        str: TOTP secret
+    """
+    return pyotp.random_base32()
+
+
+def get_totp_uri(user, secret):
+    """
+    Generate the otpauth URI for QR code generation.
+    
+    Args:
+        user: User instance
+        secret: TOTP secret
+    
+    Returns:
+        str: otpauth URI
+    """
+    totp = pyotp.TOTP(secret)
+    issuer_name = getattr(settings, 'TOTP_ISSUER_NAME', 'Trelix')
+    return totp.provisioning_uri(
+        name=user.email,
+        issuer_name=issuer_name
+    )
+
+
+def verify_totp_token(secret, token):
+    """
+    Verify a TOTP token.
+    
+    Args:
+        secret: TOTP secret
+        token: Token to verify
+    
+    Returns:
+        bool: True if valid, False otherwise
+    """
+    if not secret or not token:
+        return False
+    
+    try:
+        totp = pyotp.TOTP(secret)
+        return totp.verify(token, valid_window=1)  # Allow 1 step tolerance for clock skew
+    except Exception:
+        return False
+
+
+def setup_2fa(profile):
+    """
+    Setup 2FA for a profile by generating secret and backup codes.
+    
+    Args:
+        profile: Profile instance
+    
+    Returns:
+        tuple: (secret, backup_codes)
+    """
+    secret = generate_totp_secret()
+    backup_codes = generate_backup_codes(8)
+    
+    profile.otp_secret = secret
+    profile.backup_codes = backup_codes
+    profile.two_step_verification = True
+    profile.save()
+    
+    return secret, backup_codes
+
+
+def reset_backup_codes(profile):
+    """
+    Reset backup codes for a profile.
+    
+    Args:
+        profile: Profile instance
+    
+    Returns:
+        list: New backup codes
+    """
+    backup_codes = generate_backup_codes(8)
+    profile.backup_codes = backup_codes
+    profile.save()
+    
+    return backup_codes
+
+
+def disable_2fa(profile):
+    """
+    Disable 2FA for a profile.
+    
+    Args:
+        profile: Profile instance
+    """
+    profile.two_step_verification = False
+    profile.otp_secret = None
+    profile.backup_codes = []
+    profile.save()
+
+
+def generate_device_key(user_agent, ip_address):
+    """
+    Generate a unique device key from user agent and IP.
+    
+    Args:
+        user_agent: Browser user agent string
+        ip_address: Client IP address
+    
+    Returns:
+        str: Hashed device key
+    """
+    combined = f"{user_agent}_{ip_address}"
+    return hashlib.sha256(combined.encode()).hexdigest()
+
+
+def is_device_trusted(user, device_key):
+    """
+    Check if a device is trusted for a user.
+    
+    Args:
+        user: User instance
+        device_key: Device key to check
+    
+    Returns:
+        bool: True if device is trusted
+    """
+    return TrustedDevice.objects.filter(user=user, device_key=device_key).exists()
+
+
+def trust_device(user, device_key, user_agent=''):
+    """
+    Mark a device as trusted for a user.
+    
+    Args:
+        user: User instance
+        device_key: Device key
+        user_agent: Browser user agent
+    """
+    TrustedDevice.objects.update_or_create(
+        user=user,
+        device_key=device_key,
+        defaults={'user_agent': user_agent}
+    )
+
+
+def download_backup_codes(backup_codes, filename='backup_codes.txt'):
+    """
+    Create a downloadable text file with backup codes.
+    
+    Args:
+        backup_codes: List of backup codes
+        filename: Name of the file
+    
+    Returns:
+        tuple: (file_content, content_type)
+    """
+    content = "TWO-FACTOR AUTHENTICATION BACKUP CODES\n"
+    content += "=" * 40 + "\n\n"
+    content += "Save these codes in a safe place. Each code can only be used once.\n\n"
+    
+    for i, code in enumerate(backup_codes, 1):
+        content += f"{i}. {code}\n"
+    
+    content += "\n" + "=" * 40 + "\n"
+    content += "Generated by Trelix\n"
+    
+    return content, 'text/plain'
+
