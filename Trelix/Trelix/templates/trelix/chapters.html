@@ -7,6 +7,14 @@
 
 <section class="course-lession bg-shade sec-padding overflow-hidden">
   <div class="container-fluid px-0">
+
+    <!-- BOUTON SUMMARY AU CENTRE HAUT -->
+    <div class="text-center my-4">
+      <button id="generate-summary" class="btn btn-warning btn-lg shadow-sm px-4">
+        <i class="bi bi-card-text me-2"></i> Generate Course Summary
+      </button>
+    </div>
+
     <div class="row">
       <!-- Sidebar Chapitres -->
       <div class="col-lg-4">
@@ -92,6 +100,30 @@
             </div>
           </div>
 
+          <!-- Modal du résumé -->
+          <div id="summaryModal" class="modal fade" tabindex="-1" aria-labelledby="summaryModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+              <div class="modal-content shadow-lg rounded-4 border-0">
+                <div class="modal-header bg-warning text-dark">
+                  <h5 class="modal-title" id="summaryModalLabel">Course Summary</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" id="summary-content">
+                  <div class="text-center text-muted">
+                    <div class="spinner-border text-warning" role="status"></div>
+                    <p class="mt-3">Generating summary...</p>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <a href="#" id="download-summary-pdf" class="btn btn-primary" target="_blank">
+    <i class="bi bi-download me-2"></i> Download PDF
+  </a>
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Navigation Next / Previous -->
           <div class="d-flex justify-content-between mt-4">
             <button type="button" class="btn btn-outline-primary" id="prev-chapter">Previous</button>
@@ -131,10 +163,7 @@ document.addEventListener("DOMContentLoaded", function() {
     buttons.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentIndex = index;
-
-    // Sauvegarder l'index dans localStorage
     localStorage.setItem('currentChapterIndex', currentIndex);
-
     scrollToActiveChapter(btn);
 
     const chapterId = btn.dataset.id;
@@ -181,7 +210,6 @@ document.addEventListener("DOMContentLoaded", function() {
   });
   buttons.forEach((btn, i) => btn.addEventListener('click', () => showChapter(i)));
 
-  // Lire l'index du dernier chapitre depuis localStorage
   const savedIndex = localStorage.getItem('currentChapterIndex');
   if (savedIndex !== null && savedIndex < buttons.length) {
     showChapter(parseInt(savedIndex));
@@ -225,9 +253,7 @@ document.addEventListener("DOMContentLoaded", function() {
       .then(res => res.json())
       .then(data => {
         const quiz = data.quiz;
-        console.log("Generated quiz for chapter", chapterId, quiz); // ✅ Pour debug
         let html = "";
-
         quiz.forEach((q, idx) => {
           html += `<div class="mb-4">
             <h5 class="fw-bold">${idx + 1}. ${q.question}</h5>
@@ -239,51 +265,68 @@ document.addEventListener("DOMContentLoaded", function() {
             `).join('')}
           </div>`;
         });
-
         html += `<div id="quiz-score" class="mt-3 text-center fw-bold fs-4"></div>`;
         quizContent.innerHTML = html;
 
         quizForm.onsubmit = function(e) {
           e.preventDefault();
           let score = 0;
-
           quiz.forEach((q, idx) => {
             const selected = document.querySelector(`input[name="question-${idx}"]:checked`);
             if (selected && selected.value.toUpperCase() === q.answer.toUpperCase()) score++;
           });
-
-          // POST pour stocker le score
           fetch(`/courses/quiz/score/`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify({
-              chapter_id: chapterId,
-              score: score
-            })
+            headers: {'Content-Type': 'application/json','X-CSRFToken': '{{ csrf_token }}'},
+            body: JSON.stringify({chapter_id: chapterId, score: score})
           }).then(res => {
             if(res.ok) {
-              console.log("Score saved!");
               userScores[chapterId] = score;
               updateQuizButton(chapterId);
-
-              // fermer le modal
               const quizModalEl = document.getElementById('quizModal');
-              const modalInstance = bootstrap.Modal.getInstance(quizModalEl);
-              modalInstance.hide();
+              bootstrap.Modal.getInstance(quizModalEl).hide();
             }
           });
-
           document.getElementById('quiz-score').innerHTML = `You got ${score} out of ${quiz.length} correct!`;
         }
-      })
-      .catch(err => {
+      }).catch(err => {
         console.error(err);
         quizContent.innerHTML = `<p class="text-danger">Failed to generate quiz. Please try again.</p>`;
       });
   }
+
+  // =========================
+  // Résumé du cours complet
+  // =========================
+  const summaryBtn = document.getElementById('generate-summary');
+  const summaryModalEl = document.getElementById('summaryModal');
+  const summaryContent = document.getElementById('summary-content');
+  const downloadBtn = document.getElementById('download-summary-pdf');
+
+  summaryBtn.addEventListener('click', () => {
+    summaryContent.innerHTML = `<div class="text-center text-muted">
+      <div class="spinner-border text-warning" role="status"></div>
+      <p class="mt-3">Generating course summary...</p>
+    </div>`;
+    const summaryModal = new bootstrap.Modal(summaryModalEl);
+    summaryModal.show();
+
+    fetch(`/courses/summarize/{{ course.id }}/`)
+      .then(res => res.json())
+      .then(data => {
+        if(data.summary) {
+          // Retours à la ligne et scroll pour résumé long
+          const formattedSummary = data.summary.replace(/\n/g, '<br>');
+          summaryContent.innerHTML = `<div style="max-height:400px; overflow-y:auto; white-space:pre-wrap;">${formattedSummary}</div>`;
+          downloadBtn.href = `/courses/summarize/pdf/{{ course.id }}/`;
+        } else {
+          summaryContent.innerHTML = `<p class="text-danger">Failed to generate summary. Please try again.</p>`;
+        }
+      }).catch(err => {
+        console.error(err);
+        summaryContent.innerHTML = `<p class="text-danger">Error occurred. Please try again.</p>`;
+      });
+  });
 });
 </script>
 
