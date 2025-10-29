@@ -8,7 +8,6 @@
 <section class="course-lession bg-shade sec-padding overflow-hidden">
   <div class="container-fluid px-0">
     <div class="row">
-
       <!-- Sidebar Chapitres -->
       <div class="col-lg-4">
         <aside class="sidebar position-relative lession-sidebar px-4">
@@ -16,6 +15,7 @@
           <div class="lesson-container list-group" id="chapter-list">
             {% for chapter in chapters %}
             <button type="button" class="list-group-item list-group-item-action {% if forloop.first %}active{% endif %}"
+                    data-id="{{ chapter.id }}"
                     data-index="{{ forloop.counter0 }}"
                     data-title="{{ chapter.title|escapejs }}"
                     data-description="{{ chapter.description|escapejs }}"
@@ -49,7 +49,7 @@
           <div class="lession-content" style="transition: opacity 0.3s;">
             <h3 class="display-5 mb-3" id="chapter-title">
               {% if selected_chapter %}
-                Chapitre 1: {{ selected_chapter.title }}
+                Chapter 1: {{ selected_chapter.title }}
               {% else %}
                 {{ course.title }}
               {% endif %}
@@ -61,6 +61,35 @@
                 No content available.
               {% endif %}
             </p>
+          </div>
+
+          <!-- Conteneur du bouton Quiz -->
+          <div class="text-center mt-4" id="quiz-button-container">
+            <!-- Le bouton sera injecté via JS -->
+          </div>
+
+          <!-- Modal du quiz -->
+          <div id="quizModal" class="modal fade" tabindex="-1" aria-labelledby="quizModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+              <div class="modal-content shadow-lg rounded-4 border-0">
+                <div class="modal-header bg-primary text-white">
+                  <h5 class="modal-title" id="quizModalLabel">Chapter Quiz</h5>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="quiz-form">
+                  <div class="modal-body p-4" id="quiz-content">
+                    <div class="text-center text-muted">
+                      <div class="spinner-border text-primary" role="status"></div>
+                      <p class="mt-3">Generating quiz...</p>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Submit Quiz</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  </div>
+                </form>
+              </div>
+            </div>
           </div>
 
           <!-- Navigation Next / Previous -->
@@ -78,35 +107,47 @@
 
 {% include 'trelix/footer.html' %}
 
-<!-- JS pour contenu dynamique + navigation -->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
   const buttons = Array.from(document.querySelectorAll('#chapter-list .list-group-item'));
   const titleEl = document.getElementById('chapter-title');
   const descEl = document.getElementById('chapter-description');
   const videoContainer = document.getElementById('chapter-video');
+  const quizButtonContainer = document.getElementById('quiz-button-container');
+  const quizContent = document.getElementById('quiz-content');
+  const quizForm = document.getElementById('quiz-form');
   let currentIndex = 0;
+
+  const userScores = {{ user_scores_json|safe }}; // dictionnaire {chapter_id: score}
+
+  function scrollToActiveChapter(btn) {
+    btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
 
   function showChapter(index) {
     const btn = buttons[index];
     if (!btn) return;
 
-    // Met à jour l'état actif
     buttons.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentIndex = index;
 
+    // Sauvegarder l'index dans localStorage
+    localStorage.setItem('currentChapterIndex', currentIndex);
+
+    scrollToActiveChapter(btn);
+
+    const chapterId = btn.dataset.id;
     const newTitle = btn.dataset.title;
     const newDesc = btn.dataset.description;
     const newVideo = btn.dataset.video;
 
-    // Animation douce pour le contenu
     titleEl.style.opacity = 0;
     descEl.style.opacity = 0;
     videoContainer.style.opacity = 0;
 
     setTimeout(() => {
-      titleEl.textContent = `Chapitre ${index + 1}: ${newTitle}`;
+      titleEl.textContent = `Chapter ${index + 1}: ${newTitle}`;
       descEl.textContent = newDesc;
 
       videoContainer.innerHTML = '';
@@ -124,31 +165,125 @@ document.addEventListener("DOMContentLoaded", function() {
         videoContainer.innerHTML = '<p id="no-video-text" class="text-center text-muted py-5 border rounded">No video available for this chapter.</p>';
       }
 
-      // Fade in
       titleEl.style.opacity = 1;
       descEl.style.opacity = 1;
       videoContainer.style.opacity = 1;
+
+      updateQuizButton(chapterId);
     }, 200);
   }
 
-  // Initialisation
-  showChapter(0);
-
-  // Click sur un chapitre
-  buttons.forEach((btn, i) => {
-    btn.addEventListener('click', () => showChapter(i));
-  });
-
-  // Navigation Previous / Next
   document.getElementById('prev-chapter').addEventListener('click', () => {
-    const newIndex = (currentIndex > 0) ? currentIndex - 1 : 0;
-    showChapter(newIndex);
+    showChapter(Math.max(0, currentIndex - 1));
   });
-
   document.getElementById('next-chapter').addEventListener('click', () => {
-    const newIndex = (currentIndex < buttons.length - 1) ? currentIndex + 1 : buttons.length - 1;
-    showChapter(newIndex);
+    showChapter(Math.min(buttons.length - 1, currentIndex + 1));
   });
+  buttons.forEach((btn, i) => btn.addEventListener('click', () => showChapter(i)));
+
+  // Lire l'index du dernier chapitre depuis localStorage
+  const savedIndex = localStorage.getItem('currentChapterIndex');
+  if (savedIndex !== null && savedIndex < buttons.length) {
+    showChapter(parseInt(savedIndex));
+  } else {
+    showChapter(0);
+  }
+
+  function updateQuizButton(chapterId) {
+    if (userScores[chapterId] !== undefined) {
+      quizButtonContainer.innerHTML = `
+        <button class="btn btn-secondary btn-lg shadow-sm px-4" disabled>
+          Quiz already completed (Score: ${userScores[chapterId]}/3)
+        </button>
+      `;
+    } else {
+      quizButtonContainer.innerHTML = `
+        <button id="generate-quiz" class="btn btn-primary btn-lg shadow-sm px-4">
+          <i class="bi bi-lightbulb me-2"></i> Generate Quiz
+        </button>
+      `;
+      document.getElementById('generate-quiz').addEventListener('click', generateQuiz);
+    }
+  }
+
+  function generateQuiz() {
+    const activeButton = buttons[currentIndex];
+    const chapterId = activeButton.dataset.id;
+    if (!chapterId) return alert("Chapter ID not found!");
+
+    quizContent.innerHTML = `
+      <div class="text-center text-muted">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-3">Generating quiz...</p>
+      </div>
+    `;
+
+    const quizModal = new bootstrap.Modal(document.getElementById('quizModal'));
+    quizModal.show();
+
+    fetch(`/courses/quiz/${chapterId}/`)
+      .then(res => res.json())
+      .then(data => {
+        const quiz = data.quiz;
+        console.log("Generated quiz for chapter", chapterId, quiz); // ✅ Pour debug
+        let html = "";
+
+        quiz.forEach((q, idx) => {
+          html += `<div class="mb-4">
+            <h5 class="fw-bold">${idx + 1}. ${q.question}</h5>
+            ${q.options.map((opt, i) => `
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="question-${idx}" id="q${idx}-opt-${i}" value="${String.fromCharCode(65+i)}">
+                <label class="form-check-label" for="q${idx}-opt-${i}">${opt.label}</label>
+              </div>
+            `).join('')}
+          </div>`;
+        });
+
+        html += `<div id="quiz-score" class="mt-3 text-center fw-bold fs-4"></div>`;
+        quizContent.innerHTML = html;
+
+        quizForm.onsubmit = function(e) {
+          e.preventDefault();
+          let score = 0;
+
+          quiz.forEach((q, idx) => {
+            const selected = document.querySelector(`input[name="question-${idx}"]:checked`);
+            if (selected && selected.value.toUpperCase() === q.answer.toUpperCase()) score++;
+          });
+
+          // POST pour stocker le score
+          fetch(`/courses/quiz/score/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+              chapter_id: chapterId,
+              score: score
+            })
+          }).then(res => {
+            if(res.ok) {
+              console.log("Score saved!");
+              userScores[chapterId] = score;
+              updateQuizButton(chapterId);
+
+              // fermer le modal
+              const quizModalEl = document.getElementById('quizModal');
+              const modalInstance = bootstrap.Modal.getInstance(quizModalEl);
+              modalInstance.hide();
+            }
+          });
+
+          document.getElementById('quiz-score').innerHTML = `You got ${score} out of ${quiz.length} correct!`;
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        quizContent.innerHTML = `<p class="text-danger">Failed to generate quiz. Please try again.</p>`;
+      });
+  }
 });
 </script>
 
