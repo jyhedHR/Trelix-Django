@@ -27,9 +27,16 @@ print("Filesystem encoding:", sys.getfilesystemencoding())
 # 🔐 SECURITY
 # -------------------------------------------------------------
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-key')
-DEBUG = True
-ALLOWED_HOSTS = []
+DEBUG = False
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "trelix-django.onrender.com",
+]
 
+REFERER_EXTERNAL_HOSTNAMES = [
+    'https://trelix-django.onrender.com',
+]
 # -------------------------------------------------------------
 # ⚙️ APPLICATIONS
 # -------------------------------------------------------------
@@ -56,6 +63,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -131,6 +139,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"), 
 ]
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 
