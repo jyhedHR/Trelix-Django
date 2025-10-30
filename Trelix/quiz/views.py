@@ -4,9 +4,9 @@ from django.contrib import messages
 from django.core.files import File
 from django.conf import settings
 from cloudinary import uploader
+from io import BytesIO
 from .models import Quiz, Choice, UserBadge, Badge
 from .utils.badge_image import generate_badge_image
-import os
 
 @login_required(login_url='signin')
 def quiz_list(request):
@@ -59,16 +59,32 @@ def quiz_detail(request, quiz_id):
                 
             if created or not badge.icon:
                 print(f"🎨 Generating image for badge: {badge_name}")
-                image_path = generate_badge_image(badge_name)
-                full_path = os.path.join(settings.MEDIA_ROOT, image_path)
-                if os.path.exists(full_path):
-                    print(f"📁 Image file exists: {full_path}")
+                pil_image, is_fallback = generate_badge_image(badge_name)
+                
+                if is_fallback:
+                    print(f"⚠️ Generated image is fallback (blue) - API likely failed. Not saving to avoid overwriting.")
+                    print(f"⚠️ Will retry on next badge creation. Check STABILITY_API_KEY and API status.")
+                    # Don't save fallback images - leave icon empty so it retries next time
+                else:
+                    # Image is valid (not fallback), upload directly from memory to Cloudinary
                     try:
-                        # Upload to Cloudinary using uploader - use file path directly
-                        upload_result = uploader.upload(full_path, folder="badges", resource_type="image")
+                        # Convert PIL Image to BytesIO for upload
+                        img_buffer = BytesIO()
+                        pil_image.save(img_buffer, format='PNG')
+                        img_buffer.seek(0)
+                        
+                        # Upload to Cloudinary from memory
+                        upload_result = uploader.upload(
+                            img_buffer,
+                            folder="badges",
+                            resource_type="image",
+                            format="png"
+                        )
+                        
                         if upload_result and 'public_id' in upload_result:
                             badge.icon = upload_result['public_id']
-                            badge.save()
+                            # Use update_fields to avoid triggering save() recursively
+                            badge.save(update_fields=['icon'])
                             print(f"✅ Badge icon uploaded to Cloudinary: {upload_result['public_id']}")
                         else:
                             print(f"⚠️ Upload result incomplete: {upload_result}")
@@ -76,16 +92,15 @@ def quiz_detail(request, quiz_id):
                         print(f"❌ Cloudinary upload error: {str(e)}")
                         # If upload fails, try the File.save method as fallback
                         try:
-                            # Ensure badge is saved first (it should be from get_or_create)
                             if badge.pk:
-                                with open(full_path, 'rb') as f:
-                                    badge.icon.save(os.path.basename(image_path), File(f), save=False)
-                                badge.save()
+                                img_buffer = BytesIO()
+                                pil_image.save(img_buffer, format='PNG')
+                                img_buffer.seek(0)
+                                badge.icon.save(f"{badge_name.replace(' ', '_').lower()}.png", File(img_buffer), save=False)
+                                badge.save(update_fields=['icon'])
                                 print(f"✅ Badge icon saved via fallback method")
                         except Exception as e2:
                             print(f"❌ Fallback save also failed: {str(e2)}")
-                else:
-                    print(f"❌ Generated image file does not exist: {full_path}")
 
             UserBadge.objects.get_or_create(
                 user=request.user,

@@ -1,24 +1,26 @@
 # badge_image.py
-import os
 import base64
 import requests
 from io import BytesIO
 from PIL import Image
-from django.conf import settings
 
 # Load STABILITY_KEY dynamically to ensure we get the latest value
 def get_stability_key():
+    from django.conf import settings
     return getattr(settings, "STABILITY_API_KEY", None)
 
-STABILITY_KEY = get_stability_key()
 
-
-def generate_badge_image(badge_name: str) -> str:
+def generate_badge_image(badge_name: str):
+    """
+    Generate badge image using Stability AI API or return fallback.
+    Returns tuple: (PIL.Image, bool) where bool indicates if it's a fallback.
+    """
     # Re-check STABILITY_KEY each time in case settings changed
     stability_key = get_stability_key()
     if not stability_key:
         print("⚠️ STABILITY_API_KEY missing - using fallback image")
-        return _fallback_image(badge_name)
+        fallback_img = Image.new("RGB", (512, 512), (100, 100, 200))
+        return fallback_img, True  # Return image and is_fallback=True
 
     url = "https://api.stability.ai/v2beta/stable-image/generate/sd3"
 
@@ -37,12 +39,14 @@ def generate_badge_image(badge_name: str) -> str:
         response = requests.post(url, headers=headers, files=files, timeout=90)
     except requests.RequestException as e:
         print(f"Request exception: {e}")
-        return _fallback_image(badge_name)
+        fallback_img = Image.new("RGB", (512, 512), (100, 100, 200))
+        return fallback_img, True
 
     print(f"🔄 API Status: {response.status_code}")
     if response.status_code != 200:
         print(f"❌ API error {response.status_code}: {response.text[:500]}")
-        return _fallback_image(badge_name)
+        fallback_img = Image.new("RGB", (512, 512), (100, 100, 200))
+        return fallback_img, True
 
     try:
         data = response.json()
@@ -51,35 +55,16 @@ def generate_badge_image(badge_name: str) -> str:
         img_b64 = data.get("image")
         if not img_b64:
             print("No 'image' field in response")
-            return _fallback_image(badge_name)
+            fallback_img = Image.new("RGB", (512, 512), (100, 100, 200))
+            return fallback_img, True
 
         img_bytes = base64.b64decode(img_b64)
         img = Image.open(BytesIO(img_bytes))
 
-        return _save_image(img, badge_name)
+        print(f"✅ Generated badge image from API")
+        return img, False  # Return image and is_fallback=False
 
     except Exception as exc:
         print(f"Image processing error: {exc}")
-        return _fallback_image(badge_name)
-
-
-def _save_image(pil_img: Image.Image, badge_name: str) -> str:
-    file_name = f"{badge_name.replace(' ', '_').lower()}.png"
-    badge_folder = os.path.join(settings.MEDIA_ROOT, "badges")
-    os.makedirs(badge_folder, exist_ok=True)
-    image_path = os.path.join(badge_folder, file_name)
-
-    pil_img.save(image_path, format="PNG")
-    print(f"✅ Generated badge image saved: {image_path}")
-    return f"badges/{file_name}"
-
-
-def _fallback_image(badge_name: str) -> str:
-    file_name = f"{badge_name.replace(' ', '_').lower()}.png"
-    badge_folder = os.path.join(settings.MEDIA_ROOT, "badges")
-    os.makedirs(badge_folder, exist_ok=True)
-    image_path = os.path.join(badge_folder, file_name)
-
-    Image.new("RGB", (512, 512), (100, 100, 200)).save(image_path)
-    print(f"⚠️ Fallback blue image saved: {image_path}")
-    return f"badges/{file_name}"
+        fallback_img = Image.new("RGB", (512, 512), (100, 100, 200))
+        return fallback_img, True
