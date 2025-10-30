@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     
     'participation',
     'widget_tweaks',
+    'anymail',
     'accounts',
     'cloudinary',
     'cloudinary_storage'
@@ -259,7 +260,10 @@ HF_API_TOKEN=os.getenv('HF_API_TOKEN')
 # For DEVELOPMENT: Use console backend (emails will be printed to console)
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# For PRODUCTION: Use SMTP backend to send actual emails
+# Sensible default timeout to avoid long request blocking
+EMAIL_TIMEOUT = int(os.getenv('EMAIL_TIMEOUT', '10'))
+
+# Default to SMTP, but prefer provider HTTP API if available
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 # SMTP Configuration - Read from .env file
@@ -270,6 +274,14 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'noreply@trelix.com')
 SERVER_EMAIL = DEFAULT_FROM_EMAIL  # Used for error messages
+
+# Anymail (SendGrid) via HTTP API if key provided
+SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
+if SENDGRID_API_KEY:
+    EMAIL_BACKEND = 'anymail.backends.sendgrid.EmailBackend'
+    ANYMAIL = {
+        'SENDGRID_API_KEY': SENDGRID_API_KEY,
+    }
 
 # -------------------------------------------------------------
 # 🧱 DEFAULT PRIMARY KEY FIELD
