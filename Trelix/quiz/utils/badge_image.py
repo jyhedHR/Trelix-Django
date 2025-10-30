@@ -6,18 +6,24 @@ from io import BytesIO
 from PIL import Image
 from django.conf import settings
 
-STABILITY_KEY = getattr(settings, "STABILITY_API_KEY", None)
+# Load STABILITY_KEY dynamically to ensure we get the latest value
+def get_stability_key():
+    return getattr(settings, "STABILITY_API_KEY", None)
+
+STABILITY_KEY = get_stability_key()
 
 
 def generate_badge_image(badge_name: str) -> str:
-    if not STABILITY_KEY:
-        print("STABILITY_API_KEY missing")
+    # Re-check STABILITY_KEY each time in case settings changed
+    stability_key = get_stability_key()
+    if not stability_key:
+        print("⚠️ STABILITY_API_KEY missing - using fallback image")
         return _fallback_image(badge_name)
 
     url = "https://api.stability.ai/v2beta/stable-image/generate/sd3"
 
     headers = {
-        "Authorization": f"Bearer {STABILITY_KEY}",
+        "Authorization": f"Bearer {stability_key}",
         "Accept": "application/json",
     }
 
@@ -33,11 +39,9 @@ def generate_badge_image(badge_name: str) -> str:
         print(f"Request exception: {e}")
         return _fallback_image(badge_name)
 
-    print("DEBUG Status:", response.status_code)
-    print("DEBUG Resp (first 500):", response.text[:500])
-
+    print(f"🔄 API Status: {response.status_code}")
     if response.status_code != 200:
-        print(f"API error {response.status_code}: {response.text}")
+        print(f"❌ API error {response.status_code}: {response.text[:500]}")
         return _fallback_image(badge_name)
 
     try:
@@ -66,7 +70,7 @@ def _save_image(pil_img: Image.Image, badge_name: str) -> str:
     image_path = os.path.join(badge_folder, file_name)
 
     pil_img.save(image_path, format="PNG")
-    print(f"Image saved: {image_path}")
+    print(f"✅ Generated badge image saved: {image_path}")
     return f"badges/{file_name}"
 
 
@@ -77,5 +81,5 @@ def _fallback_image(badge_name: str) -> str:
     image_path = os.path.join(badge_folder, file_name)
 
     Image.new("RGB", (512, 512), (100, 100, 200)).save(image_path)
-    print(f"Fallback image saved: {image_path}")
+    print(f"⚠️ Fallback blue image saved: {image_path}")
     return f"badges/{file_name}"

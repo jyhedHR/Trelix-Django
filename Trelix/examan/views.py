@@ -32,7 +32,7 @@ def exams_view(request):
         if student_exam and student_exam.score >= 50:
             cert_obj = Certificate.objects.filter(student=request.user, exam=exam).first()
             if cert_obj and cert_obj.file_path:
-                certificate = cert_obj.file_path.url  # get the full URL from Cloudinary
+                certificate = cert_obj.get_certificate_url()  # get the proper PDF URL from Cloudinary
 
         exams_status.append({
             'exam': exam,
@@ -96,12 +96,21 @@ def submit_exam_view(request, exam_id):
                 full_path = os.path.join(settings.MEDIA_ROOT, certificate_path)
                 if os.path.exists(full_path):
                     try:
-                        # Upload to Cloudinary
-                        upload_result = uploader.upload(full_path, folder="certificates", resource_type="raw")
-                        if upload_result and 'public_id' in upload_result:
-                            cert_obj.file_path = upload_result['public_id']
-                            cert_obj.save()
-                    except Exception:
+                        # Upload to Cloudinary with raw resource type for PDF
+                        upload_result = uploader.upload(
+                            full_path, 
+                            folder="certificates", 
+                            resource_type="raw",
+                            format="pdf"
+                        )
+                        # Store secure_url or public_id - prefer secure_url for direct access
+                        if upload_result:
+                            # Store public_id (CloudinaryField will use this)
+                            if 'public_id' in upload_result:
+                                cert_obj.file_path = upload_result['public_id']
+                                cert_obj.save()
+                            # Also can store secure_url in a different field if needed, but public_id works with get_certificate_url()
+                    except Exception as e:
                         # Fallback: use File.save method
                         try:
                             from django.core.files import File

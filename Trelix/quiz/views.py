@@ -48,18 +48,32 @@ def quiz_detail(request, quiz_id):
 
             badge, created = Badge.objects.get_or_create(name=badge_name)
 
-            # ✅ Génération automatique de l'icône si elle n'existe pas
-            if not badge.icon:
+            # ✅ Génération automatique de l'icône si elle n'existe pas ou si badge vient d'être créé
+            # Regenerate if badge was just created OR if icon doesn't exist
+            if created:
+                print(f"🆕 New badge created: {badge_name}")
+            elif not badge.icon:
+                print(f"🔄 Badge exists but has no icon: {badge_name}")
+            else:
+                print(f"ℹ️ Badge already has icon (will not regenerate): {badge_name}")
+                
+            if created or not badge.icon:
+                print(f"🎨 Generating image for badge: {badge_name}")
                 image_path = generate_badge_image(badge_name)
                 full_path = os.path.join(settings.MEDIA_ROOT, image_path)
                 if os.path.exists(full_path):
+                    print(f"📁 Image file exists: {full_path}")
                     try:
                         # Upload to Cloudinary using uploader - use file path directly
                         upload_result = uploader.upload(full_path, folder="badges", resource_type="image")
                         if upload_result and 'public_id' in upload_result:
                             badge.icon = upload_result['public_id']
                             badge.save()
-                    except Exception:
+                            print(f"✅ Badge icon uploaded to Cloudinary: {upload_result['public_id']}")
+                        else:
+                            print(f"⚠️ Upload result incomplete: {upload_result}")
+                    except Exception as e:
+                        print(f"❌ Cloudinary upload error: {str(e)}")
                         # If upload fails, try the File.save method as fallback
                         try:
                             # Ensure badge is saved first (it should be from get_or_create)
@@ -67,8 +81,11 @@ def quiz_detail(request, quiz_id):
                                 with open(full_path, 'rb') as f:
                                     badge.icon.save(os.path.basename(image_path), File(f), save=False)
                                 badge.save()
-                        except Exception:
-                            pass  # Silently fail if both methods fail
+                                print(f"✅ Badge icon saved via fallback method")
+                        except Exception as e2:
+                            print(f"❌ Fallback save also failed: {str(e2)}")
+                else:
+                    print(f"❌ Generated image file does not exist: {full_path}")
 
             UserBadge.objects.get_or_create(
                 user=request.user,

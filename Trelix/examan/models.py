@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from cloudinary.models import CloudinaryField
+import cloudinary
 # Create your models here.
 class Exam(models.Model):
     title = models.CharField(max_length=255)
@@ -29,7 +30,18 @@ class Certificate(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE)
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
     date_issued = models.DateTimeField(auto_now_add=True)
-    file_path = CloudinaryField(max_length=255, verbose_name='image', blank=True, null=True) 
+    file_path = CloudinaryField(max_length=255, verbose_name='image', blank=True, null=True)
+    
+    def get_certificate_url(self):
+        """Generate proper Cloudinary URL for PDF certificate (raw resource type)"""
+        if not self.file_path:
+            return None
+        # Build URL for raw resource (PDF)
+        return cloudinary.utils.cloudinary_url(
+            str(self.file_path),
+            resource_type='raw',
+            format='pdf'
+        )[0] 
 
 
 # examapp/models.py
