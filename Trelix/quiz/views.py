@@ -1,8 +1,11 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.files import File
+from django.conf import settings
 from .models import Quiz, Choice, UserBadge, Badge
 from .utils.badge_image import generate_badge_image
+import os
 
 @login_required(login_url='signin')
 def quiz_list(request):
@@ -47,8 +50,11 @@ def quiz_detail(request, quiz_id):
             # ✅ Génération automatique de l'icône si elle n'existe pas
             if not badge.icon:
                 image_path = generate_badge_image(badge_name)
-                badge.icon.name = image_path
-                badge.save()
+                full_path = os.path.join(settings.MEDIA_ROOT, image_path)
+                if os.path.exists(full_path):
+                    with open(full_path, 'rb') as f:
+                        badge.icon.save(os.path.basename(image_path), File(f), save=False)
+                    badge.save()
 
             UserBadge.objects.get_or_create(
                 user=request.user,

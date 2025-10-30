@@ -13,7 +13,6 @@ urlpatterns = [
     path('', views.home, name='home'),  # Root - home page
     path('accounts/', include('accounts.urls')),  # Accounts URLs
     path('courses/', include('cours.urls')),      
-    path('exams/', views.exams_view, name='exams'),            
     path('course/<int:course_id>/', views.single_course_view, name='single-course'),
     path('chapters/', include('chapitre.urls')),
     path('evenements/', include('evenement.urls')),  

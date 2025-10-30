@@ -20,6 +20,7 @@ import string
 
 
 
+@login_required
 def exams_view(request):
     exams = Exam.objects.all()
     exams_status = []

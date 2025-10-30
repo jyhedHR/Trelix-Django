@@ -1,8 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.files import File
 from cloudinary.models import CloudinaryField
 from .utils import generate_badge_image
 from django.utils.text import slugify
+import os
 
 
 class Badge(models.Model):
@@ -22,9 +24,13 @@ class Badge(models.Model):
 
         # ✅ Génération automatique de l'image si absente
         if not self.icon:
+            from django.conf import settings
             image_path = generate_badge_image(self.name)
-            self.icon.name = image_path
-            super().save(update_fields=["icon"])
+            full_path = os.path.join(settings.MEDIA_ROOT, image_path)
+            if os.path.exists(full_path):
+                with open(full_path, 'rb') as f:
+                    self.icon.save(os.path.basename(image_path), File(f), save=False)
+                super().save(update_fields=["icon"])
             
 class Quiz(models.Model):
     title = models.CharField(max_length=200)
