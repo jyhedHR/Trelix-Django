@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.files import File
 from cloudinary.models import CloudinaryField
+from cloudinary import uploader
 from .utils import generate_badge_image
 from django.utils.text import slugify
 import os
@@ -28,9 +29,22 @@ class Badge(models.Model):
             image_path = generate_badge_image(self.name)
             full_path = os.path.join(settings.MEDIA_ROOT, image_path)
             if os.path.exists(full_path):
-                with open(full_path, 'rb') as f:
-                    self.icon.save(os.path.basename(image_path), File(f), save=False)
-                super().save(update_fields=["icon"])
+                try:
+                    # Upload to Cloudinary using uploader - use file path directly
+                    upload_result = uploader.upload(full_path, folder="badges", resource_type="image")
+                    if upload_result and 'public_id' in upload_result:
+                        self.icon = upload_result['public_id']
+                        super().save(update_fields=["icon"])
+                except Exception:
+                    # If upload fails, try the File.save method as fallback (only if badge is saved)
+                    try:
+                        # Ensure the instance is saved first
+                        if self.pk:
+                            with open(full_path, 'rb') as f:
+                                self.icon.save(os.path.basename(image_path), File(f), save=False)
+                            super().save(update_fields=["icon"])
+                    except Exception:
+                        pass  # Silently fail if both methods fail
             
 class Quiz(models.Model):
     title = models.CharField(max_length=200)

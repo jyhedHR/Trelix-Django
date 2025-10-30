@@ -15,6 +15,7 @@ from reportlab.lib import colors
 from PyPDF2 import PdfReader, PdfWriter
 from io import BytesIO
 from django.contrib.auth.decorators import login_required
+from cloudinary import uploader
 import random
 import string
 
@@ -30,8 +31,8 @@ def exams_view(request):
         certificate = None
         if student_exam and student_exam.score >= 50:
             cert_obj = Certificate.objects.filter(student=request.user, exam=exam).first()
-            if cert_obj:
-                certificate = cert_obj.file_path.url  # get the full URL
+            if cert_obj and cert_obj.file_path:
+                certificate = cert_obj.file_path.url  # get the full URL from Cloudinary
 
         exams_status.append({
             'exam': exam,
@@ -84,12 +85,32 @@ def submit_exam_view(request, exam_id):
 
         # ✅ Generate certificate if score >= 50%
         if student_exam.score >= 50:
-            certificate_path = generate_certificate(student, exam)
-            Certificate.objects.get_or_create(
+            # Check if certificate already exists
+            cert_obj, created = Certificate.objects.get_or_create(
                 student=student,
-                exam=exam,
-                defaults={'file_path': certificate_path}
+                exam=exam
             )
+            # Only generate and upload if certificate doesn't exist or doesn't have file
+            if created or not cert_obj.file_path:
+                certificate_path = generate_certificate(student, exam)
+                full_path = os.path.join(settings.MEDIA_ROOT, certificate_path)
+                if os.path.exists(full_path):
+                    try:
+                        # Upload to Cloudinary
+                        upload_result = uploader.upload(full_path, folder="certificates", resource_type="raw")
+                        if upload_result and 'public_id' in upload_result:
+                            cert_obj.file_path = upload_result['public_id']
+                            cert_obj.save()
+                    except Exception:
+                        # Fallback: use File.save method
+                        try:
+                            from django.core.files import File
+                            if cert_obj.pk:
+                                with open(full_path, 'rb') as f:
+                                    cert_obj.file_path.save(os.path.basename(certificate_path), File(f), save=False)
+                                cert_obj.save()
+                        except Exception:
+                            pass  # Silently fail if upload fails
 
         return redirect('exam_submitted', exam_id=exam.id)
 

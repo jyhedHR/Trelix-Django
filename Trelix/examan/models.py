@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from cloudinary.models import CloudinaryField
 # Create your models here.
 class Exam(models.Model):
     title = models.CharField(max_length=255)
@@ -28,7 +29,7 @@ class Certificate(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE)
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
     date_issued = models.DateTimeField(auto_now_add=True)
-    file_path = models.FileField(upload_to='certificates/') 
+    file_path = CloudinaryField(max_length=255, verbose_name='image', blank=True, null=True) 
 
 
 # examapp/models.py

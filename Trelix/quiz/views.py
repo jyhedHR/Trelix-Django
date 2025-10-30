@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.files import File
 from django.conf import settings
+from cloudinary import uploader
 from .models import Quiz, Choice, UserBadge, Badge
 from .utils.badge_image import generate_badge_image
 import os
@@ -52,9 +53,22 @@ def quiz_detail(request, quiz_id):
                 image_path = generate_badge_image(badge_name)
                 full_path = os.path.join(settings.MEDIA_ROOT, image_path)
                 if os.path.exists(full_path):
-                    with open(full_path, 'rb') as f:
-                        badge.icon.save(os.path.basename(image_path), File(f), save=False)
-                    badge.save()
+                    try:
+                        # Upload to Cloudinary using uploader - use file path directly
+                        upload_result = uploader.upload(full_path, folder="badges", resource_type="image")
+                        if upload_result and 'public_id' in upload_result:
+                            badge.icon = upload_result['public_id']
+                            badge.save()
+                    except Exception:
+                        # If upload fails, try the File.save method as fallback
+                        try:
+                            # Ensure badge is saved first (it should be from get_or_create)
+                            if badge.pk:
+                                with open(full_path, 'rb') as f:
+                                    badge.icon.save(os.path.basename(image_path), File(f), save=False)
+                                badge.save()
+                        except Exception:
+                            pass  # Silently fail if both methods fail
 
             UserBadge.objects.get_or_create(
                 user=request.user,
