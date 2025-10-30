@@ -199,9 +199,9 @@
 }
 
 </style>
-<section class="promo-sec" style="background: url('{% static 'images/promo-bg.jpg' %}') no-repeat center center / cover;">
-  <img src="{% static 'images/promo-left.png' %}" alt="" class="anim-img">
-  <img src="{% static 'images/promo-right.png' %}" alt="" class="anim-img anim-right">
+<section class="promo-sec" style="background: url(&quot;{% static 'images/promo-bg.jpg' %}&quot;) no-repeat center center / cover;">
+  <img src="{% static 'images/promo-left.png' %}" alt="Promotional decoration" class="anim-img">
+  <img src="{% static 'images/promo-right.png' %}" alt="Promotional decoration" class="anim-img anim-right">
   <div class="container">
     <div class="row">
       <div class="col-lg-12 text-center">
@@ -249,7 +249,7 @@
   {% if not item.completed %}
     <a href="{% url 'exam-detail' item.exam.id %}" class="btn-start">Start Exam</a>
   {% else %}
-    <a class="btn-result" onclick="loadResult({{ item.student_exam_id }}, this)">
+    <a class="btn-result" onclick="loadResult('{{ item.student_exam_id }}', this)">
       View Result
     </a>
 
@@ -291,7 +291,7 @@
     btn.textContent = "Loading...";
 
     try {
-      const response = await fetch(`/exam/result/${studentExamId}/`, {
+      const response = await fetch('/exam/result/' + studentExamId + '/', {
         headers: { "X-Requested-With": "XMLHttpRequest" }
       });
       const data = await response.json();

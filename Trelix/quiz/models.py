@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from cloudinary.models import CloudinaryField
 from .utils import generate_badge_image
 from django.utils.text import slugify
 
@@ -8,7 +9,7 @@ class Badge(models.Model):
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(unique=True, blank=True, null=True)  # ✅ null=True pour éviter les erreurs migration
     description = models.TextField(blank=True)  # ✅ Gardé comme tu veux
-    icon = models.ImageField(upload_to="badges/", blank=True, null=True)
+    icon = CloudinaryField(max_length=255, verbose_name='image', blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:

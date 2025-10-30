@@ -1,7 +1,7 @@
 {% extends "trelix/base.html" %}
 {% block title %}Quiz Results{% endblock %}
 {% block content %}
-
+{% include 'trelix/header.html' %}
 <style>
     .score-zoom {
         animation: pop 0.9s ease-out forwards;
@@ -76,5 +76,5 @@
     </div>
 
 </div>
-
+{% include 'trelix/footer.html' %}
 {% endblock %}
